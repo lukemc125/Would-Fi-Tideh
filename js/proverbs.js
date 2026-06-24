@@ -57,12 +57,6 @@
     'Wi pick five likkle gem fi share wid yu. Come een.',
     'Settle yusself, wi have five ole-time sayin fi yu.'
   ];
-  var PATOIS_FRAMES = [
-    'Ow about dis one: "{O}."',
-    'Mi grandmodda did always seh: "{O}."',
-    'Listen to dis: "{O}."',
-    'Here go one: "{O}."'
-  ];
   var TRANS_FRAMES = [
     'Dat mean: "{E}."',
     'In plain English, dat a seh: "{E}."',
@@ -92,13 +86,15 @@
     add(hosts.a, 'intro', pick(rng, INTRO_A), null);
     add(hosts.b, 'intro', pick(rng, INTRO_B), null);
 
+    // Auntie Pearl (a) always reads the proverb itself and its meaning; Uncle
+    // Roy (b) gives the translation. Fixing the patois to one host means a single
+    // pre-generated clip per proverb always matches the voice that "speaks" it,
+    // and the proverb is read plainly so the clip matches the transcript line.
     for (var i = 0; i < proverbs.length; i++) {
       var p = proverbs[i];
-      var lead = (i % 2 === 0) ? hosts.a : hosts.b;
-      var other = (lead === hosts.a) ? hosts.b : hosts.a;
-      add(lead, 'patois', pick(rng, PATOIS_FRAMES).replace('{O}', p.original), i);
-      add(other, 'translation', pick(rng, TRANS_FRAMES).replace('{E}', p.english), i);
-      add(lead, 'meaning', pick(rng, MEANING_FRAMES).replace('{M}', lowerFirst(p.meaning)), i);
+      add(hosts.a, 'patois', '"' + p.original + '"', i);
+      add(hosts.b, 'translation', pick(rng, TRANS_FRAMES).replace('{E}', p.english), i);
+      add(hosts.a, 'meaning', pick(rng, MEANING_FRAMES).replace('{M}', lowerFirst(p.meaning)), i);
     }
 
     add(hosts.b, 'outro', pick(rng, OUTRO), null);

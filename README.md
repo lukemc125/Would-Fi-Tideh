@@ -29,25 +29,29 @@ activates automatically; until then it shows a "coming soon" note.
 ## Better voices (authentic Jamaican audio)
 
 By default the spoken audio uses the browser's built-in speech, which only
-approximates Patois. For authentic Jamaican-accent audio, pre-generate a clip
-for every proverb with [ElevenLabs](https://elevenlabs.io) (which has real
-Jamaican voices). It's a one-time, offline step — no backend, no API key in the
-browser — and the ~34 short proverbs sit well under the free tier.
+approximates Patois. For authentic Jamaican-accent audio, generate a clip for
+each proverb with [ElevenLabs](https://elevenlabs.io) (which has real Jamaican
+voices) into `audio/proverbs/<slug>.mp3`. "Daily Wud → Hear it" and the patois
+lines in "Wuds of Wisdom" then use them automatically; anything missing falls
+back to the browser voice. Use one Jamaican voice for all of them — on the site
+that voice reads each proverb aloud.
 
-1. Make a free ElevenLabs account, open **Voices → Voice Library**, add a
-   Jamaican voice, and copy its **Voice ID**.
-2. Generate the clips into `audio/proverbs/<slug>.mp3`:
+**Free, by hand (the website):** ElevenLabs' free tier lets you use Voice
+Library voices on the website — just not via the API. Follow
+[`audio/GENERATION_GUIDE.md`](audio/GENERATION_GUIDE.md), which lists every
+proverb's text and its target filename. Drop the downloads into
+`audio/proverbs/` and commit them.
 
-   ```bash
-   ELEVENLABS_API_KEY=your_key ELEVENLABS_VOICE_ID=your_voice_id npm run build:audio
-   ```
+**Automated (paid API):** using library voices via the API needs a paid plan
+(Starter and up) plus a full-access API key. Then:
 
-   (Optional `ELEVENLABS_MODEL`, default `eleven_multilingual_v2`. Append
-   `-- --force` to regenerate clips that already exist.)
-3. Commit the generated `audio/proverbs/*.mp3` so they deploy with the site.
+```bash
+ELEVENLABS_API_KEY=your_key ELEVENLABS_VOICE_ID=your_voice_id npm run build:audio
+```
 
-"Daily Wud → Hear it" and the patois lines in "Wuds of Wisdom" use these clips
-automatically; anything missing falls back to the browser voice.
+(Optional `ELEVENLABS_MODEL`, default `eleven_multilingual_v2`. Append
+`-- --force` to regenerate existing clips.) Commit the generated mp3s so they
+deploy with the site.
 
 ## Update the proverbs
 
