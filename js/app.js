@@ -66,6 +66,7 @@
     var stopBtn = document.getElementById('wow-stop');
     var mixBtn = document.getElementById('wow-mix');
     var script = [];
+    var paused = false;
 
     function renderTranscript() {
       transcriptEl.innerHTML = '';
@@ -103,25 +104,42 @@
       playBtn.hidden = on; pauseBtn.hidden = !on; stopBtn.hidden = !on;
     }
 
+    // Paused: show Play (as "resume") next to Stop, hide Pause.
+    function showPaused() {
+      playBtn.hidden = false; pauseBtn.hidden = true; stopBtn.hidden = false;
+    }
+
     if (!player.supported()) {
       statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.';
     }
 
     playBtn.addEventListener('click', function () {
+      if (paused) {                      // resume where we left off
+        paused = false;
+        player.resume();
+        showPlaying(true);
+        statusEl.textContent = 'On air…';
+        return;
+      }
       if (!script.length) newSession();
       player.loadVoices(function () {
         player.play(script, {
           onLineStart: function (i) { highlight(i); },
-          onEnd: function () { showPlaying(false); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+          onEnd: function () { paused = false; showPlaying(false); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
           onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
         });
         showPlaying(true);
         statusEl.textContent = 'On air…';
       });
     });
-    pauseBtn.addEventListener('click', function () { player.pause(); });
-    stopBtn.addEventListener('click', function () { player.stop(); showPlaying(false); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
-    mixBtn.addEventListener('click', newSession);
+    pauseBtn.addEventListener('click', function () {
+      player.pause();
+      paused = true;
+      showPaused();
+      statusEl.textContent = 'Paused. Press play fi continue.';
+    });
+    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+    mixBtn.addEventListener('click', function () { paused = false; newSession(); });
 
     newSession();
   }
