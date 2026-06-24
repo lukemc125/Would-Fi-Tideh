@@ -39,10 +39,71 @@
     return idx;
   }
 
+  function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+
+  var INTRO_A = [
+    'Welcome back to Wuds of Wisdom! Mi deh yah wid yu.',
+    'Hello, hello! Yu tune in to Wuds of Wisdom.',
+    'Greetings, mi people! Time fi some sweet wisdom.'
+  ];
+  var INTRO_B = [
+    'Big up everybody tunin in. Wi have five proverb fi yu today.',
+    'Wi pick five likkle gem fi share wid yu. Come een.',
+    'Settle yusself, wi have five ole-time sayin fi yu.'
+  ];
+  var PATOIS_FRAMES = [
+    'Ow about dis one: "{O}."',
+    'Mi grandmodda did always seh: "{O}."',
+    'Listen to dis: "{O}."',
+    'Here go one: "{O}."'
+  ];
+  var TRANS_FRAMES = [
+    'Dat mean: "{E}."',
+    'In plain English, dat a seh: "{E}."',
+    'Yu know wha dat mean? "{E}."'
+  ];
+  var MEANING_FRAMES = [
+    'True true. Basically, {M}',
+    'In oder wuds, {M}',
+    'An di lesson deh: {M}',
+    'Mmm-hmm. {M}'
+  ];
+  var OUTRO = [
+    'An dat a di wisdom fi today. Walk good, an ketch yu next time!',
+    'Tek dem wid yu. Walk good, till wi chat again!',
+    'Likkle but talawah. Walk good, everybody!'
+  ];
+
+  function lowerFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+
+  function generateScript(proverbs, hosts, rng) {
+    rng = rng || Math.random;
+    hosts = hosts || DEFAULT_HOSTS;
+    var lines = [];
+    function add(host, kind, text, proverb) {
+      lines.push({ speaker: host.name, voice: host.voice, text: text, kind: kind, proverb: (proverb == null ? null : proverb) });
+    }
+    add(hosts.a, 'intro', pick(rng, INTRO_A), null);
+    add(hosts.b, 'intro', pick(rng, INTRO_B), null);
+
+    for (var i = 0; i < proverbs.length; i++) {
+      var p = proverbs[i];
+      var lead = (i % 2 === 0) ? hosts.a : hosts.b;
+      var other = (lead === hosts.a) ? hosts.b : hosts.a;
+      add(lead, 'patois', pick(rng, PATOIS_FRAMES).replace('{O}', p.original), i);
+      add(other, 'translation', pick(rng, TRANS_FRAMES).replace('{E}', p.english), i);
+      add(lead, 'meaning', pick(rng, MEANING_FRAMES).replace('{M}', lowerFirst(p.meaning)), i);
+    }
+
+    add(hosts.b, 'outro', pick(rng, OUTRO), null);
+    return lines;
+  }
+
   return {
     DEFAULT_HOSTS: DEFAULT_HOSTS,
     dailyIndex: dailyIndex,
     pickN: pickN,
-    randomIndexExcluding: randomIndexExcluding
+    randomIndexExcluding: randomIndexExcluding,
+    generateScript: generateScript
   };
 });
