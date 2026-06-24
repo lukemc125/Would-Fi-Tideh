@@ -55,9 +55,87 @@
     window.speechSynthesis.speak(u);
   }
 
+  function initWow() {
+    if (!data.length || !window.Radio) return;
+    var player = new window.Radio.RadioPlayer();
+    var transcriptEl = document.getElementById('wow-transcript');
+    var statusEl = document.getElementById('wow-status');
+    var barEl = document.getElementById('wow-progress-bar');
+    var playBtn = document.getElementById('wow-play');
+    var pauseBtn = document.getElementById('wow-pause');
+    var stopBtn = document.getElementById('wow-stop');
+    var mixBtn = document.getElementById('wow-mix');
+    var script = [];
+
+    function renderTranscript() {
+      transcriptEl.innerHTML = '';
+      script.forEach(function (line, i) {
+        var div = document.createElement('div');
+        div.className = 't-line voice-' + line.voice;
+        div.setAttribute('data-line', i);
+        div.innerHTML = '<span class="who">' + line.speaker + ':</span> ' + escapeHtml(line.text);
+        transcriptEl.appendChild(div);
+      });
+      setProgress(0);
+    }
+
+    function setProgress(i) {
+      var pct = script.length ? Math.round((i / script.length) * 100) : 0;
+      barEl.style.width = pct + '%';
+    }
+
+    function highlight(i) {
+      var nodes = transcriptEl.querySelectorAll('.t-line');
+      for (var k = 0; k < nodes.length; k++) nodes[k].classList.toggle('active', k === i);
+      setProgress(i + 1);
+    }
+
+    function newSession() {
+      player.stop();
+      var picks = window.Proverbs.pickN(data, 5);
+      script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS);
+      renderTranscript();
+      statusEl.textContent = 'Press play fi hear Auntie Pearl an Uncle Roy.';
+      showPlaying(false);
+    }
+
+    function showPlaying(on) {
+      playBtn.hidden = on; pauseBtn.hidden = !on; stopBtn.hidden = !on;
+    }
+
+    if (!player.supported()) {
+      statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.';
+    }
+
+    playBtn.addEventListener('click', function () {
+      if (!script.length) newSession();
+      player.loadVoices(function () {
+        player.play(script, {
+          onLineStart: function (i) { highlight(i); },
+          onEnd: function () { showPlaying(false); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+          onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
+        });
+        showPlaying(true);
+        statusEl.textContent = 'On air…';
+      });
+    });
+    pauseBtn.addEventListener('click', function () { player.pause(); });
+    stopBtn.addEventListener('click', function () { player.stop(); showPlaying(false); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+    mixBtn.addEventListener('click', newSession);
+
+    newSession();
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Theme) window.Theme.initTheme(document, window);
     initDaily();
+    initWow();
   });
 
   // Exposed for later tasks (Wuds of Wisdom, podcast) to extend.
