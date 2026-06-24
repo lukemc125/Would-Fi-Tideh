@@ -37,13 +37,13 @@
 
     document.getElementById('daily-shuffle').addEventListener('click', function () {
       renderDaily(P.randomIndexExcluding(data.length, dailyIdx), false);
-      speak(data[dailyIdx].original);
+      hearProverb(data[dailyIdx]);
     });
     document.getElementById('daily-reset').addEventListener('click', function () {
       renderDaily(todayIdx, true);
     });
     document.getElementById('daily-hear').addEventListener('click', function () {
-      speak(data[dailyIdx].original);
+      hearProverb(data[dailyIdx]);
     });
   }
 
@@ -54,6 +54,26 @@
     var u = new SpeechSynthesisUtterance(text);
     u.rate = 0.95; u.lang = 'en-US';
     window.speechSynthesis.speak(u);
+  }
+
+  function clipUrl(slug) { return 'audio/proverbs/' + slug + '.mp3'; }
+
+  // Play a proverb's pre-generated authentic clip; fall back to browser speech
+  // if the clip is missing or won't play.
+  var dailyAudio = null;
+  function hearProverb(p) {
+    if (!p) return;
+    if (dailyAudio) { try { dailyAudio.pause(); } catch (e) {} dailyAudio = null; }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (typeof Audio === 'undefined') { speak(p.original); return; }
+    var a = new Audio();
+    dailyAudio = a;
+    var done = false;
+    function fallback() { if (done) return; done = true; if (dailyAudio === a) speak(p.original); }
+    a.onerror = fallback;
+    a.src = clipUrl(p.slug);
+    var pr = a.play();
+    if (pr && pr.catch) pr.catch(fallback);
   }
 
   function initWow() {
@@ -110,8 +130,15 @@
 
     function newSession() {
       player.stop();
+      paused = false;
       var picks = window.Proverbs.pickN(data, 5);
       script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS);
+      // Authentic clip for each patois line; English banter stays on browser TTS.
+      script.forEach(function (line) {
+        if (line.kind === 'patois' && line.proverb != null && picks[line.proverb]) {
+          line.audioSrc = clipUrl(picks[line.proverb].slug);
+        }
+      });
       renderTranscript();
       statusEl.textContent = 'Press play fi hear Auntie Pearl an Uncle Roy.';
       showPlaying(false);

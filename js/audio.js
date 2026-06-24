@@ -13,23 +13,32 @@
     return { a: a, b: b };
   }
 
-  // Per-host speech characteristics so the two hosts are distinguishable
-  // even when only one system voice exists.
+  // Per-host speech characteristics so the two hosts are distinguishable even
+  // when only one system voice exists (browser-TTS fallback only).
   var STYLE = {
     a: { pitch: 1.18, rate: 0.97 }, // Auntie Pearl — higher, lively
     b: { pitch: 0.82, rate: 0.95 }  // Uncle Roy — lower, easy
   };
 
-  function RadioPlayer(synth) {
+  // Plays a script ONE line at a time, in order. A line carrying an `audioSrc`
+  // (a pre-generated authentic clip) is played from that file; if the file is
+  // missing or unplayable, that line falls back to browser speech. Lines with no
+  // `audioSrc` use browser speech. So the patois lines can sound authentic while
+  // the English banter rides the system voice.
+  function RadioPlayer(synth, AudioCtor) {
     this.synth = synth || (typeof window !== 'undefined' ? window.speechSynthesis : null);
+    var AC = AudioCtor || (typeof Audio !== 'undefined' ? Audio : null);
+    this.audio = AC ? new AC() : null;
     this.voices = null;
     this.script = [];
-    this.index = 0;
+    this.cb = {};
+    this.index = -1;
     this.playing = false;
-    this.callbacks = {};
+    this.paused = false;
+    this.mode = null; // 'clip' | 'tts'
   }
 
-  RadioPlayer.prototype.supported = function () { return !!this.synth; };
+  RadioPlayer.prototype.supported = function () { return !!(this.synth || this.audio); };
 
   RadioPlayer.prototype.loadVoices = function (cb) {
     var self = this;
@@ -43,42 +52,76 @@
   };
 
   RadioPlayer.prototype.play = function (script, callbacks) {
-    if (!this.synth) { if (callbacks && callbacks.onUnsupported) callbacks.onUnsupported(); return; }
+    this.cb = callbacks || {};
+    if (!this.supported()) { if (this.cb.onUnsupported) this.cb.onUnsupported(); return; }
     this.stop();
+    this.cb = callbacks || {};
     this.script = script || [];
-    this.callbacks = callbacks || {};
-    this.index = 0;
+    this.index = -1;
     this.playing = true;
-    this._speakFrom(0);
+    this.paused = false;
+    this._next();
   };
 
-  RadioPlayer.prototype._speakFrom = function (start) {
-    var self = this;
-    var voices = this.voices || {};
-    for (var i = start; i < this.script.length; i++) {
-      (function (i) {
-        var line = self.script[i];
-        var u = new (typeof window !== 'undefined' ? window.SpeechSynthesisUtterance : function () {})(line.text);
-        var style = STYLE[line.voice] || STYLE.a;
-        if (voices[line.voice]) u.voice = voices[line.voice];
-        u.pitch = style.pitch; u.rate = style.rate; u.lang = (u.voice && u.voice.lang) || 'en-US';
-        u.onstart = function () { self.index = i; if (self.callbacks.onLineStart) self.callbacks.onLineStart(i, line); };
-        u.onend = function () {
-          if (i === self.script.length - 1 && self.playing) {
-            self.playing = false;
-            if (self.callbacks.onEnd) self.callbacks.onEnd();
-          }
-        };
-        self.synth.speak(u);
-      })(i);
+  RadioPlayer.prototype._next = function () {
+    if (!this.playing) return;
+    this.index++;
+    if (this.index >= this.script.length) {
+      this.playing = false;
+      if (this.cb.onEnd) this.cb.onEnd();
+      return;
     }
+    var line = this.script[this.index];
+    if (this.cb.onLineStart) this.cb.onLineStart(this.index, line);
+    if (line.audioSrc && this.audio) this._playClip(line);
+    else this._speak(line);
   };
 
-  RadioPlayer.prototype.pause = function () { if (this.synth && this.playing) { this.synth.pause(); } };
-  RadioPlayer.prototype.resume = function () { if (this.synth) { this.synth.resume(); } };
+  RadioPlayer.prototype._playClip = function (line) {
+    var self = this, a = this.audio;
+    this.mode = 'clip';
+    a.onended = function () { a.onended = null; a.onerror = null; self._next(); };
+    a.onerror = function () { a.onended = null; a.onerror = null; self._speak(line); };
+    try { a.src = line.audioSrc; } catch (e) { self._speak(line); return; }
+    var p = a.play();
+    if (p && p.catch) p.catch(function () { a.onended = null; a.onerror = null; self._speak(line); });
+  };
+
+  RadioPlayer.prototype._speak = function (line) {
+    var self = this;
+    this.mode = 'tts';
+    if (!this.synth || typeof window === 'undefined' || !window.SpeechSynthesisUtterance) { self._next(); return; }
+    var u = new window.SpeechSynthesisUtterance(line.text);
+    var style = STYLE[line.voice] || STYLE.a;
+    var voices = this.voices || {};
+    if (voices[line.voice]) u.voice = voices[line.voice];
+    u.pitch = style.pitch; u.rate = style.rate; u.lang = (u.voice && u.voice.lang) || 'en-US';
+    u.onend = function () { self._next(); };
+    u.onerror = function () { self._next(); };
+    this.synth.speak(u);
+  };
+
+  RadioPlayer.prototype.pause = function () {
+    if (!this.playing || this.paused) return;
+    this.paused = true;
+    if (this.mode === 'clip' && this.audio) this.audio.pause();
+    else if (this.synth) this.synth.pause();
+  };
+
+  RadioPlayer.prototype.resume = function () {
+    if (!this.paused) return;
+    this.paused = false;
+    if (this.mode === 'clip' && this.audio) { var p = this.audio.play(); if (p && p.catch) p.catch(function () {}); }
+    else if (this.synth) this.synth.resume();
+  };
+
   RadioPlayer.prototype.stop = function () {
-    if (this.synth) { this.synth.cancel(); }
     this.playing = false;
+    this.paused = false;
+    if (this.synth) this.synth.cancel();
+    if (this.audio) {
+      try { this.audio.pause(); this.audio.onended = null; this.audio.onerror = null; this.audio.removeAttribute('src'); } catch (e) {}
+    }
   };
 
   return { chooseVoices: chooseVoices, RadioPlayer: RadioPlayer };

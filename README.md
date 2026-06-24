@@ -5,7 +5,8 @@ Donald Thompson's "Wud fi Tideh" podcast.
 
 - **The Daily Wud** — today's proverb with its English translation and meaning.
 - **Wuds of Wisdom** — five random proverbs turned into a two-host radio
-  segment, spoken aloud by the browser, with a live transcript.
+  segment with a live transcript. Plays authentic per-proverb clips when present
+  (see "Better voices" below), falling back to the browser voice otherwise.
 - **Legends** — a tribute to Louise Bennett-Coverley ("Miss Lou") and Claude
   McKay, who made Patois a literary language.
 - Day/night theme: **Sunsplash** by day, **Reggae Dusk** by night.
@@ -24,6 +25,29 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 Drop the mp3 at `audio/wud-fi-tideh.mp3`. The "Hear the Original" player
 activates automatically; until then it shows a "coming soon" note.
+
+## Better voices (authentic Jamaican audio)
+
+By default the spoken audio uses the browser's built-in speech, which only
+approximates Patois. For authentic Jamaican-accent audio, pre-generate a clip
+for every proverb with [ElevenLabs](https://elevenlabs.io) (which has real
+Jamaican voices). It's a one-time, offline step — no backend, no API key in the
+browser — and the ~34 short proverbs sit well under the free tier.
+
+1. Make a free ElevenLabs account, open **Voices → Voice Library**, add a
+   Jamaican voice, and copy its **Voice ID**.
+2. Generate the clips into `audio/proverbs/<slug>.mp3`:
+
+   ```bash
+   ELEVENLABS_API_KEY=your_key ELEVENLABS_VOICE_ID=your_voice_id npm run build:audio
+   ```
+
+   (Optional `ELEVENLABS_MODEL`, default `eleven_multilingual_v2`. Append
+   `-- --force` to regenerate clips that already exist.)
+3. Commit the generated `audio/proverbs/*.mp3` so they deploy with the site.
+
+"Daily Wud → Hear it" and the patois lines in "Wuds of Wisdom" use these clips
+automatically; anything missing falls back to the browser voice.
 
 ## Update the proverbs
 
