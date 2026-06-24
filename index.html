@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wud fi Tideh — Jamaican wisdom fi every day</title>
+  <meta name="description" content="A daily dose of Jamaican Patois proverbs, with translations, meanings, and a conversational radio segment." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    (function () {
+      try {
+        var s = localStorage.getItem('wft-theme');
+        var h = new Date().getHours();
+        var t = (s === 'day' || s === 'night') ? s : ((h >= 6 && h < 18) ? 'day' : 'night');
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="#top">Wud fi <span>Tideh</span></a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#daily">Daily Wud</a>
+      <a href="#wow">Wuds of Wisdom</a>
+      <a href="#original">The Original</a>
+      <a href="#legends">Legends</a>
+    </nav>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"></button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <h1>Wud fi Tideh</h1>
+      <p>A piece a Jamaican wisdom fi every day</p>
+      <div class="flag-rule" aria-hidden="true"><span></span><span></span><span></span></div>
+    </section>
+
+    <section id="daily" class="section">
+      <article class="daily-card">
+        <div class="card-top">
+          <span class="eyebrow">The Daily Wud</span>
+          <span id="daily-date" class="date"></span>
+        </div>
+        <p id="daily-original" class="patois"></p>
+        <p id="daily-english" class="english"></p>
+        <p id="daily-meaning" class="meaning"></p>
+        <div class="actions">
+          <button id="daily-hear" class="btn btn-green" type="button"><i class="ti ti-volume" aria-hidden="true"></i> Hear it</button>
+          <button id="daily-shuffle" class="btn btn-gold" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Gimme anodda one</button>
+          <button id="daily-reset" class="btn btn-ghost" type="button" hidden><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Back to today</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="wow" class="section">
+      <div class="wow-studio">
+        <div class="wow-head">
+          <div>
+            <h2>Wuds of Wisdom</h2>
+            <p>Five proverbs, one likkle radio session</p>
+          </div>
+          <button id="wow-mix" class="btn btn-orange" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Mix up a new session</button>
+        </div>
+        <div class="wow-controls">
+          <button id="wow-play" class="round-btn" type="button" aria-label="Play session"><i class="ti ti-player-play" aria-hidden="true"></i></button>
+          <button id="wow-pause" class="round-btn" type="button" aria-label="Pause" hidden><i class="ti ti-player-pause" aria-hidden="true"></i></button>
+          <button id="wow-stop" class="round-btn" type="button" aria-label="Stop" hidden><i class="ti ti-player-stop" aria-hidden="true"></i></button>
+          <div id="wow-progress" class="wow-progress"><span id="wow-progress-bar"></span></div>
+        </div>
+        <p id="wow-status" class="wow-status" role="status" aria-live="polite"></p>
+        <div id="wow-transcript" class="wow-transcript" aria-label="Session transcript"></div>
+      </div>
+    </section>
+
+    <section id="original" class="section">
+      <div class="podcast">
+        <div class="vinyl" aria-hidden="true"><span></span></div>
+        <div class="podcast-body">
+          <h2>Hear the Original</h2>
+          <p>Donald Thompson's "Wud fi Tideh" podcast</p>
+          <audio id="podcast-audio" preload="none" src="audio/wud-fi-tideh.mp3"></audio>
+          <div id="podcast-player" class="podcast-player" hidden>
+            <button class="btn btn-gold" type="button" onclick="document.getElementById('podcast-audio').play()"><i class="ti ti-player-play" aria-hidden="true"></i> Play</button>
+          </div>
+          <p id="podcast-missing" class="podcast-missing">The original recording is coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="legends" class="legends">
+      <div class="legends-inner">
+        <p class="eyebrow center">A weh wi come from</p>
+        <h2 class="legends-title">The Voice of the People</h2>
+        <article class="legend-feature">
+          <span class="portrait portrait-lg" aria-hidden="true">LB</span>
+          <div>
+            <h3>Louise Bennett-Coverley</h3>
+            <p class="legend-dates">"Miss Lou" · 1919–2006</p>
+            <p class="legend-text"></p>
+          </div>
+        </article>
+        <div class="legend-cards">
+          <article class="legend-card">
+            <span class="portrait" aria-hidden="true">CM</span>
+            <h3>Claude McKay</h3>
+            <p class="legend-dates">1890–1948</p>
+            <p class="legend-text"></p>
+          </article>
+          <article class="legend-card">
+            <span class="portrait" aria-hidden="true">LB</span>
+            <h3>Louise Bennett</h3>
+            <p class="legend-dates">Poet · Folklorist</p>
+            <p class="legend-text"></p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p class="farewell">Walk good.</p>
+    <p class="credit">Proverbs from the "Wud fi Tideh" podcast by Donald Thompson</p>
+    <div class="flag-rule small" aria-hidden="true"><span></span><span></span><span></span></div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/proverbs.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
