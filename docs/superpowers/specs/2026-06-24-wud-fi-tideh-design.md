@@ -53,7 +53,7 @@ tested directly.
 
 ### Data model & source
 
-The dataset is a snapshot of the Google Sheet (33 proverbs today), embedded into
+The dataset is a snapshot of the Google Sheet (34 proverbs today), embedded into
 `js/data.js` as an array so the site is reliable and works offline:
 
 ```js
@@ -212,7 +212,7 @@ static file server. No build, no environment, no secrets.
 
 ## Open implementation tasks
 
-- Regenerate `js/data.js` from `data/wud-fi-tideh.csv` (33 proverbs).
+- Regenerate `js/data.js` from `data/wud-fi-tideh.csv` (34 proverbs).
 - Verify and write the Legends biographical content against authoritative
   sources.
 - User to supply the podcast mp3 at `/audio/wud-fi-tideh.mp3` (optional; site

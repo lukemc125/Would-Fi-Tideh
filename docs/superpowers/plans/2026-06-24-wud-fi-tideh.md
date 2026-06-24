@@ -137,7 +137,7 @@ console.log('Wrote ' + items.length + ' proverbs to ' + OUT_PATH);
 - [ ] **Step 4: Generate the data file**
 
 Run: `npm run build:data`
-Expected: `Wrote 33 proverbs to .../js/data.js`
+Expected: `Wrote 34 proverbs to .../js/data.js`
 
 - [ ] **Step 5: Write the data shape test `test/data.test.js`**
 
@@ -229,12 +229,18 @@ Expected: FAIL — cannot find module `../js/proverbs.js`.
     b: { name: 'Uncle Roy', voice: 'b' }
   };
 
-  // djb2 string hash -> stable, well-spread index for a given date string.
+  // djb2 string hash + avalanche finalization so the result spreads evenly for
+  // ANY count. Without the mix, djb2's *33 recurrence makes (h % count)
+  // degenerate when count shares a factor with 33 (e.g. count=33 -> only the
+  // last character matters). A coverage regression test in
+  // test/proverbs.daily.test.js guards this.
   function dailyIndex(dateStr, count) {
     var h = 5381;
     for (var i = 0; i < dateStr.length; i++) {
       h = ((h << 5) + h + dateStr.charCodeAt(i)) >>> 0;
     }
+    h = Math.imul(h ^ (h >>> 15), 2654435761) >>> 0;
+    h = (h ^ (h >>> 13)) >>> 0;
     return count > 0 ? h % count : 0;
   }
 
