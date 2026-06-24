@@ -78,13 +78,15 @@
   };
 
   RadioPlayer.prototype._playClip = function (line) {
-    var self = this, a = this.audio;
+    var self = this, a = this.audio, settled = false;
     this.mode = 'clip';
-    a.onended = function () { a.onended = null; a.onerror = null; self._next(); };
-    a.onerror = function () { a.onended = null; a.onerror = null; self._speak(line); };
-    try { a.src = line.audioSrc; } catch (e) { self._speak(line); return; }
+    function clear() { a.onended = null; a.onerror = null; }
+    function onErr() { if (settled) return; settled = true; clear(); self._speak(line); } // clip missing -> speak
+    a.onended = function () { if (settled) return; settled = true; clear(); self._next(); };
+    a.onerror = onErr;
+    try { a.src = line.audioSrc; } catch (e) { onErr(); return; }
     var p = a.play();
-    if (p && p.catch) p.catch(function () { a.onended = null; a.onerror = null; self._speak(line); });
+    if (p && p.catch) p.catch(onErr);
   };
 
   RadioPlayer.prototype._speak = function (line) {
