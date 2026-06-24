@@ -18,8 +18,31 @@
     return count > 0 ? h % count : 0;
   }
 
+  function pickN(items, n, rng) {
+    rng = rng || Math.random;
+    var pool = items.slice();
+    var count = Math.min(n, pool.length);
+    var out = [];
+    for (var k = 0; k < count; k++) {
+      var j = Math.floor(rng() * pool.length);
+      out.push(pool[j]);
+      pool.splice(j, 1);
+    }
+    return out;
+  }
+
+  function randomIndexExcluding(count, exclude, rng) {
+    rng = rng || Math.random;
+    if (count <= 1) return 0;
+    var idx = exclude;
+    while (idx === exclude) { idx = Math.floor(rng() * count); }
+    return idx;
+  }
+
   return {
     DEFAULT_HOSTS: DEFAULT_HOSTS,
-    dailyIndex: dailyIndex
+    dailyIndex: dailyIndex,
+    pickN: pickN,
+    randomIndexExcluding: randomIndexExcluding
   };
 });
