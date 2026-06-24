@@ -1,0 +1,11 @@
+{
+  "name": "wud-fi-tideh",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "A novelty site of Jamaican Patois proverbs from the Wud fi Tideh podcast.",
+  "scripts": {
+    "test": "node --test",
+    "build:data": "node tools/build-data.mjs"
+  }
+}
