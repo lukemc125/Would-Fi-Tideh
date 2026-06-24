@@ -132,10 +132,24 @@
     });
   }
 
+  function initPodcast() {
+    var audio = document.getElementById('podcast-audio');
+    var player = document.getElementById('podcast-player');
+    var missing = document.getElementById('podcast-missing');
+    if (!audio) return;
+    // If the file is present and loadable, show the player; otherwise keep the
+    // "coming soon" note. 'error' fires when the src 404s.
+    audio.addEventListener('error', function () { player.hidden = true; missing.hidden = false; });
+    audio.addEventListener('loadedmetadata', function () { player.hidden = false; missing.hidden = true; });
+    // Trigger a metadata probe without autoplaying.
+    try { audio.load(); } catch (e) {}
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Theme) window.Theme.initTheme(document, window);
     initDaily();
     initWow();
+    initPodcast();
   });
 
   // Exposed for later tasks (Wuds of Wisdom, podcast) to extend.
