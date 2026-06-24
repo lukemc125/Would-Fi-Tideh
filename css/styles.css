@@ -128,6 +128,9 @@ body {
 .farewell { font-family: var(--font-serif); font-style: italic; font-size: 18px; margin: 0 0 6px; }
 .credit { font-size: 12px; opacity: 0.9; margin: 0; }
 
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 0 0 8px 0; z-index: 20; }
+.skip-link:focus { left: 0; }
+
 @media (max-width: 560px) {
   .site-nav { display: none; }
   .hero h1 { font-size: 34px; }
