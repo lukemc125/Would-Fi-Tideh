@@ -15,6 +15,12 @@
     for (var i = 0; i < dateStr.length; i++) {
       h = ((h << 5) + h + dateStr.charCodeAt(i)) >>> 0;
     }
+    // Avalanche-mix the accumulated hash so the result spreads evenly for ANY
+    // count. Without this, djb2's *33 recurrence makes (h % count) degenerate
+    // whenever count shares a factor with 33 (e.g. count=33 -> only the last
+    // character matters), so most proverbs could never become the Daily Wud.
+    h = Math.imul(h ^ (h >>> 15), 2654435761) >>> 0;
+    h = (h ^ (h >>> 13)) >>> 0;
     return count > 0 ? h % count : 0;
   }
 
@@ -66,7 +72,7 @@
     'True true. Basically, {M}',
     'In oder wuds, {M}',
     'An di lesson deh: {M}',
-    'Mmm-hmm. {M}'
+    'Mmm-hmm, {M}'
   ];
   var OUTRO = [
     'An dat a di wisdom fi today. Walk good, an ketch yu next time!',

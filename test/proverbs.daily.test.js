@@ -20,3 +20,15 @@ test('dailyIndex generally differs across consecutive days', () => {
   const c = dailyIndex('2026-06-26', 33);
   assert.ok(!(a === b && b === c), 'three consecutive days should not all collide');
 });
+
+test('dailyIndex spreads across (almost) all buckets over a year', () => {
+  for (const count of [34, 33, 37]) {
+    const seen = new Set();
+    const base = Date.UTC(2026, 0, 1);
+    for (let d = 0; d < 366; d++) {
+      const iso = new Date(base + d * 86400000).toISOString().slice(0, 10);
+      seen.add(dailyIndex(iso, count));
+    }
+    assert.ok(seen.size >= count - 2, 'count=' + count + ': only ' + seen.size + '/' + count + ' buckets reached over a year');
+  }
+});
