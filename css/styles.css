@@ -16,6 +16,21 @@ html[data-theme='day'] {
   --footer-bg: #0F8B3B; --footer-ink: #FFF7E6;
 }
 
+html[data-theme='night'] {
+  --bg: #1A1816; --surface: #262320; --ink: #F5ECD8; --muted: #B8AF9C;
+  --green: #2FA84F; --gold: #F2B705; --gold-bright: #F2B705; --orange: #FF8C3B;
+  --hero-bg: #211F18; --hero-ink: #F2B705; --header-bg: #0E0D0C; --header-ink: #F2B705;
+  --studio-bg: #211F18; --studio-ink: #F5ECD8; --studio-panel: #15140F; --studio-accent: #F2B705;
+  --legends-bg: #100F0C; --legends-ink: #F5ECD8; --legends-card: #1C1A15; --legends-muted: #BBB2A1;
+  --footer-bg: #0E0D0C; --footer-ink: #F2B705;
+}
+html[data-theme='night'] .daily-card { border-left-color: var(--green); }
+html[data-theme='night'] .hero { border-bottom: 1px solid #332F25; }
+html[data-theme='night'] .wow-studio { border: 1px solid #3A3528; }
+html[data-theme='night'] .podcast { background: #2A2118; border: 1px solid #463720; color: #F3E7D2; }
+html[data-theme='night'] .podcast-body p { color: #C2B59C; }
+html[data-theme='night'] .legend-feature, html[data-theme='night'] .legend-card { border: 1px solid #2E2A22; }
+
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
