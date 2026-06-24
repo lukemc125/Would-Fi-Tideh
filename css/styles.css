@@ -32,6 +32,7 @@ html[data-theme='night'] .podcast-body p { color: #C2B59C; }
 html[data-theme='night'] .legend-feature, html[data-theme='night'] .legend-card { border: 1px solid #2E2A22; }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
