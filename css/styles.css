@@ -140,3 +140,53 @@ body {
   html { scroll-behavior: auto; }
   .wow-progress span { transition: none; }
 }
+
+/* ===== Interaction & motion upgrades ===== */
+
+/* Day <-> night colour cross-fade (JS present; does not fire on first paint) */
+html.js body,
+html.js .site-header,
+html.js .hero,
+html.js .daily-card,
+html.js .wow-studio,
+html.js .wow-controls,
+html.js .podcast,
+html.js .legends,
+html.js .legend-feature,
+html.js .legend-card,
+html.js .site-footer {
+  transition: background-color .45s ease, color .45s ease, border-color .45s ease;
+}
+
+/* Button & control feel */
+.btn { transition: transform .14s ease, filter .14s ease, background-color .45s ease, color .45s ease; }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.97); }
+.round-btn { transition: transform .14s ease, filter .14s ease, background-color .3s ease; }
+.round-btn:hover { filter: brightness(1.08); transform: scale(1.05); }
+.round-btn:active { transform: scale(.94); }
+.theme-toggle { transition: background-color .2s ease, transform .35s ease; }
+.theme-toggle:hover { transform: scale(1.08); }
+.theme-toggle:active { transform: rotate(40deg) scale(.95); }
+
+/* Scroll-spy active nav link */
+.site-nav a { opacity: .82; border-bottom: 2px solid transparent; padding-bottom: 2px; transition: opacity .2s ease, border-color .25s ease; }
+.site-nav a:hover { opacity: 1; }
+.site-nav a.active { opacity: 1; border-bottom-color: var(--gold-bright); }
+
+/* Transcript becomes a self-scrolling teleprompter */
+.wow-transcript { max-height: 360px; overflow-y: auto; scrollbar-width: thin; }
+.t-line { transition: outline-color .2s ease, background-color .45s ease, color .45s ease; }
+
+/* Spinning vinyl while the podcast plays */
+@keyframes vinyl-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .6s ease; }
+  html.js [data-reveal].revealed { opacity: 1; transform: none; }
+
+  .t-line { transition: opacity .4s ease, transform .4s ease, outline-color .2s ease, background-color .45s ease, color .45s ease; }
+  .t-line.enter { opacity: 0; transform: translateY(10px); }
+
+  .vinyl.spinning { animation: vinyl-spin 3.2s linear infinite; }
+}

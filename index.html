@@ -11,6 +11,7 @@
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <script>
+    document.documentElement.classList.add('js');
     (function () {
       try {
         var s = localStorage.getItem('wft-theme');
@@ -41,7 +42,7 @@
       <div class="flag-rule" aria-hidden="true"><span></span><span></span><span></span></div>
     </section>
 
-    <section id="daily" class="section">
+    <section id="daily" class="section" data-reveal>
       <article class="daily-card">
         <div class="card-top">
           <span class="eyebrow">The Daily Wud</span>
@@ -58,7 +59,7 @@
       </article>
     </section>
 
-    <section id="wow" class="section">
+    <section id="wow" class="section" data-reveal>
       <div class="wow-studio">
         <div class="wow-head">
           <div>
@@ -78,7 +79,7 @@
       </div>
     </section>
 
-    <section id="original" class="section">
+    <section id="original" class="section" data-reveal>
       <div class="podcast">
         <div class="vinyl" aria-hidden="true"><span></span></div>
         <div class="podcast-body">
@@ -93,7 +94,7 @@
       </div>
     </section>
 
-    <section id="legends" class="legends">
+    <section id="legends" class="legends" data-reveal>
       <div class="legends-inner">
         <p class="eyebrow center">A weh wi come from</p>
         <h2 class="legends-title">The Voice of the People</h2>
@@ -133,6 +134,7 @@
   <script src="js/proverbs.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 (function () {
   var data = window.WUD_DATA || [];
   var P = window.Proverbs;
+  var REDUCE = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   function todayStr() {
     var d = new Date();
@@ -72,11 +73,20 @@
       transcriptEl.innerHTML = '';
       script.forEach(function (line, i) {
         var div = document.createElement('div');
-        div.className = 't-line voice-' + line.voice;
+        div.className = 't-line voice-' + line.voice + (REDUCE ? '' : ' enter');
         div.setAttribute('data-line', i);
         div.innerHTML = '<span class="who">' + line.speaker + ':</span> ' + escapeHtml(line.text);
         transcriptEl.appendChild(div);
       });
+      if (!REDUCE) {
+        var lines = transcriptEl.querySelectorAll('.t-line.enter');
+        requestAnimationFrame(function () {
+          for (var k = 0; k < lines.length; k++) {
+            (function (node, idx) { setTimeout(function () { node.classList.remove('enter'); }, idx * 35); })(lines[k], k);
+          }
+        });
+      }
+      transcriptEl.scrollTop = 0;
       setProgress(0);
     }
 
@@ -89,6 +99,13 @@
       var nodes = transcriptEl.querySelectorAll('.t-line');
       for (var k = 0; k < nodes.length; k++) nodes[k].classList.toggle('active', k === i);
       setProgress(i + 1);
+      var active = nodes[i];
+      if (active) {
+        var cRect = transcriptEl.getBoundingClientRect();
+        var aRect = active.getBoundingClientRect();
+        var target = transcriptEl.scrollTop + (aRect.top - cRect.top) - (transcriptEl.clientHeight / 2) + (aRect.height / 2);
+        transcriptEl.scrollTo({ top: Math.max(0, target), behavior: REDUCE ? 'auto' : 'smooth' });
+      }
     }
 
     function newSession() {
@@ -155,10 +172,15 @@
     var player = document.getElementById('podcast-player');
     var missing = document.getElementById('podcast-missing');
     if (!audio) return;
+    var vinyl = document.querySelector('#original .vinyl');
+    function spin(on) { if (vinyl) vinyl.classList.toggle('spinning', on); }
     // If the file is present and loadable, show the player; otherwise keep the
     // "coming soon" note. 'error' fires when the src 404s.
-    audio.addEventListener('error', function () { player.hidden = true; missing.hidden = false; });
+    audio.addEventListener('error', function () { player.hidden = true; missing.hidden = false; spin(false); });
     audio.addEventListener('loadedmetadata', function () { player.hidden = false; missing.hidden = true; });
+    audio.addEventListener('play', function () { spin(true); });
+    audio.addEventListener('pause', function () { spin(false); });
+    audio.addEventListener('ended', function () { spin(false); });
     // Trigger a metadata probe without autoplaying.
     try { audio.load(); } catch (e) {}
   }
