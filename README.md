@@ -29,29 +29,33 @@ activates automatically; until then it shows a "coming soon" note.
 ## Better voices (authentic Jamaican audio)
 
 By default the spoken audio uses the browser's built-in speech, which only
-approximates Patois. For authentic Jamaican-accent audio, generate a clip for
-each proverb with [ElevenLabs](https://elevenlabs.io) (which has real Jamaican
-voices) into `audio/proverbs/<slug>.mp3`. "Daily Wud → Hear it" and the patois
-lines in "Wuds of Wisdom" then use them automatically; anything missing falls
-back to the browser voice. Use one Jamaican voice for all of them — on the site
-that voice reads each proverb aloud.
+approximates Patois. For authentic Jamaican-accent audio, generate clips with
+[ElevenLabs](https://elevenlabs.io) (which has real Jamaican voices) into
+`audio/proverbs/`. The site uses them automatically; anything missing falls back
+to the browser voice.
 
-**Free, by hand (the website):** ElevenLabs' free tier lets you use Voice
-Library voices on the website — just not via the API. Follow
-[`audio/GENERATION_GUIDE.md`](audio/GENERATION_GUIDE.md), which lists every
-proverb's text and its target filename. Drop the downloads into
-`audio/proverbs/` and commit them.
-
-**Automated (paid API):** using library voices via the API needs a paid plan
-(Starter and up) plus a full-access API key. Then:
+**Automated, both hosts (paid API):** using Voice Library voices via the API
+needs a paid plan (Starter and up) plus a full-access API key. This generates
+the whole two-host segment — Auntie Pearl (`VOICE_A`, female) reads each proverb
+and its meaning, Uncle Roy (`VOICE_B`, male) gives the translation:
 
 ```bash
-ELEVENLABS_API_KEY=your_key ELEVENLABS_VOICE_ID=your_voice_id npm run build:audio
+ELEVENLABS_API_KEY=your_key \
+  ELEVENLABS_VOICE_A=female_voice_id \
+  ELEVENLABS_VOICE_B=male_voice_id \
+  npm run build:audio
 ```
 
 (Optional `ELEVENLABS_MODEL`, default `eleven_multilingual_v2`. Append
 `-- --force` to regenerate existing clips.) Commit the generated mp3s so they
-deploy with the site.
+deploy with the site. The script regenerates only missing clips, so it's safe to
+re-run.
+
+**Free, by hand (the website):** the free tier lets you use Voice Library voices
+on elevenlabs.io itself — just not via the API. For a minimal version, generate
+the proverb readings in one voice following
+[`audio/GENERATION_GUIDE.md`](audio/GENERATION_GUIDE.md) and drop them into
+`audio/proverbs/`.
 
 ## Update the proverbs
 

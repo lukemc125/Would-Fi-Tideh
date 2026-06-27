@@ -56,7 +56,21 @@
     window.speechSynthesis.speak(u);
   }
 
-  function clipUrl(slug) { return 'audio/proverbs/' + slug + '.mp3'; }
+  function clipUrl(key) { return 'audio/proverbs/' + key + '.mp3'; }
+
+  // The clip filename (sans .mp3) for a script line, or null if it has none.
+  // Mirrors the keys in Proverbs.audioManifest so generated clips line up.
+  function clipKeyFor(line, picks) {
+    var p = (line.proverb != null) ? picks[line.proverb] : null;
+    switch (line.kind) {
+      case 'patois': return p ? p.slug : null;
+      case 'translation': return p ? p.slug + '.trans' : null;
+      case 'meaning': return p ? p.slug + '.meaning' : null;
+      case 'intro': return 'intro.' + line.voice + '.' + line.variant;
+      case 'outro': return 'outro.' + line.variant;
+      default: return null;
+    }
+  }
 
   // Play a proverb's pre-generated authentic clip; fall back to browser speech
   // if the clip is missing or won't play.
@@ -133,11 +147,10 @@
       paused = false;
       var picks = window.Proverbs.pickN(data, 5);
       script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS);
-      // Authentic clip for each patois line; English banter stays on browser TTS.
+      // Map every line to its authentic clip; browser TTS fills any gaps.
       script.forEach(function (line) {
-        if (line.kind === 'patois' && line.proverb != null && picks[line.proverb]) {
-          line.audioSrc = clipUrl(picks[line.proverb].slug);
-        }
+        var key = clipKeyFor(line, picks);
+        if (key) line.audioSrc = clipUrl(key);
       });
       renderTranscript();
       statusEl.textContent = 'Press play fi hear Auntie Pearl an Uncle Roy.';

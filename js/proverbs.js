@@ -45,8 +45,6 @@
     return idx;
   }
 
-  function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
-
   var INTRO_A = [
     'Welcome back to Wuds of Wisdom! Mi deh yah wid yu.',
     'Hello, hello! Yu tune in to Wuds of Wisdom.',
@@ -57,17 +55,8 @@
     'Wi pick five likkle gem fi share wid yu. Come een.',
     'Settle yusself, wi have five ole-time sayin fi yu.'
   ];
-  var TRANS_FRAMES = [
-    'Dat mean: "{E}."',
-    'In plain English, dat a seh: "{E}."',
-    'Yu know wha dat mean? "{E}."'
-  ];
-  var MEANING_FRAMES = [
-    'True true. Basically, {M}',
-    'In oder wuds, {M}',
-    'An di lesson deh: {M}',
-    'Mmm-hmm, {M}'
-  ];
+  var TRANS_FIXED = 'Dat mean: "{E}."';
+  var MEANING_FIXED = 'In oder wuds, {M}';
   var OUTRO = [
     'An dat a di wisdom fi today. Walk good, an ketch yu next time!',
     'Tek dem wid yu. Walk good, till wi chat again!',
@@ -75,30 +64,53 @@
   ];
 
   function lowerFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+  function transText(p) { return TRANS_FIXED.replace('{E}', p.english); }
+  function meaningText(p) { return MEANING_FIXED.replace('{M}', lowerFirst(p.meaning)); }
 
   function generateScript(proverbs, hosts, rng) {
     rng = rng || Math.random;
     hosts = hosts || DEFAULT_HOSTS;
     var lines = [];
-    function add(host, kind, text, proverb) {
-      lines.push({ speaker: host.name, voice: host.voice, text: text, kind: kind, proverb: (proverb == null ? null : proverb) });
+    function add(host, kind, text, proverb, variant) {
+      lines.push({ speaker: host.name, voice: host.voice, text: text, kind: kind,
+        proverb: (proverb == null ? null : proverb), variant: (variant == null ? null : variant) });
     }
-    add(hosts.a, 'intro', pick(rng, INTRO_A), null);
-    add(hosts.b, 'intro', pick(rng, INTRO_B), null);
+    var ia = Math.floor(rng() * INTRO_A.length);
+    var ib = Math.floor(rng() * INTRO_B.length);
+    add(hosts.a, 'intro', INTRO_A[ia], null, ia);
+    add(hosts.b, 'intro', INTRO_B[ib], null, ib);
 
-    // Auntie Pearl (a) always reads the proverb itself and its meaning; Uncle
-    // Roy (b) gives the translation. Fixing the patois to one host means a single
-    // pre-generated clip per proverb always matches the voice that "speaks" it,
-    // and the proverb is read plainly so the clip matches the transcript line.
+    // Auntie Pearl (a) reads the proverb and its meaning; Uncle Roy (b) gives the
+    // translation. Every line's text is deterministic for a given proverb (the
+    // intro/outro carry a `variant` index), so each line maps to exactly one
+    // pre-generated clip and the audio always matches the transcript.
     for (var i = 0; i < proverbs.length; i++) {
       var p = proverbs[i];
-      add(hosts.a, 'patois', '"' + p.original + '"', i);
-      add(hosts.b, 'translation', pick(rng, TRANS_FRAMES).replace('{E}', p.english), i);
-      add(hosts.a, 'meaning', pick(rng, MEANING_FRAMES).replace('{M}', lowerFirst(p.meaning)), i);
+      add(hosts.a, 'patois', '"' + p.original + '"', i, null);
+      add(hosts.b, 'translation', transText(p), i, null);
+      add(hosts.a, 'meaning', meaningText(p), i, null);
     }
 
-    add(hosts.b, 'outro', pick(rng, OUTRO), null);
+    var io = Math.floor(rng() * OUTRO.length);
+    add(hosts.b, 'outro', OUTRO[io], null, io);
     return lines;
+  }
+
+  // Every clip the site can play, for offline generation. `voice` selects the
+  // ElevenLabs voice that reads it (a = Auntie Pearl, b = Uncle Roy). Each `clip`
+  // key matches the audioSrc path app.js builds for the corresponding line.
+  function audioManifest(proverbs) {
+    var out = [];
+    INTRO_A.forEach(function (t, i) { out.push({ clip: 'intro.a.' + i, text: t, voice: 'a' }); });
+    INTRO_B.forEach(function (t, i) { out.push({ clip: 'intro.b.' + i, text: t, voice: 'b' }); });
+    OUTRO.forEach(function (t, i) { out.push({ clip: 'outro.' + i, text: t, voice: 'b' }); });
+    proverbs.forEach(function (p) {
+      if (!p.slug) return;
+      out.push({ clip: p.slug, text: p.original, voice: 'a' });
+      out.push({ clip: p.slug + '.trans', text: transText(p), voice: 'b' });
+      out.push({ clip: p.slug + '.meaning', text: meaningText(p), voice: 'a' });
+    });
+    return out;
   }
 
   return {
@@ -106,6 +118,7 @@
     dailyIndex: dailyIndex,
     pickN: pickN,
     randomIndexExcluding: randomIndexExcluding,
-    generateScript: generateScript
+    generateScript: generateScript,
+    audioManifest: audioManifest
   };
 });
