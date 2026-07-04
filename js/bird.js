@@ -42,48 +42,67 @@
     var el = document.createElement('div');
     el.className = 'doctor-bird';
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<div class="bird-inner">' + SVG + '</div>';
+    el.innerHTML = '<div class="bird-flip"><div class="bird-inner">' + SVG + '</div></div>';
     document.body.appendChild(el);
 
-    var cur = { x: -160, y: 160, s: 0.5, f: 1 };
+    var cur = { x: -160, y: 160, s: 0.5 };
     var mode = 'boot';   // boot | idle | settle | transit | perch
     var perched = null;  // 'a' | 'b'
     var anim = null;
     var GEN = 0;         // generation token: bumping it abandons pending flights
     var flitTimer = null, followTimer = null;
 
-    function place(t) {
-      cur = { x: t.x, y: t.y, s: t.s, f: t.f };
-      el.style.transform = 'translate(' + t.x + 'px,' + t.y + 'px) scale(' + (t.f * t.s) + ',' + t.s + ')';
+    // Facing is a class on an inner wrapper (CSS-transitioned scaleX flip),
+    // NOT part of the animated outer transform. The outer animation only ever
+    // interpolates positive scales — sign-flipping scale inside animation
+    // keyframes is exactly what made the bird vanish on left turns in some
+    // engines, so it is banished from the flight path entirely.
+    function setFacing(f) {
+      el.classList.toggle('facing-left', f === -1);
     }
-    place(cur);
+    function facing() {
+      return el.classList.contains('facing-left') ? -1 : 1;
+    }
+
+    function place(t) {
+      cur = { x: t.x, y: t.y, s: t.s };
+      el.style.transform = 'translate(' + t.x + 'px,' + t.y + 'px) scale(' + t.s + ')';
+      if (t.f) setFacing(t.f);
+    }
+    place({ x: cur.x, y: cur.y, s: cur.s, f: 1 });
 
     function cancelFlight() {
       GEN++;
       if (anim) { try { anim.cancel(); } catch (e) {} anim = null; }
     }
 
-    // Where the bird visibly is right now, mid-animation included.
+    // Where the bird visibly is right now, mid-animation included. With
+    // transform-origin 0 0 and positive scales the matrix is exact:
+    // m41/m42 are the logical position, m.a the scale.
     function livePos() {
       var s = getComputedStyle(el).transform;
-      if (!s || s === 'none' || typeof DOMMatrixReadOnly === 'undefined') return cur;
+      if (!s || s === 'none' || typeof DOMMatrixReadOnly === 'undefined') {
+        return { x: cur.x, y: cur.y, s: cur.s };
+      }
       try {
         var m = new DOMMatrixReadOnly(s);
-        return { x: m.m41, y: m.m42, s: Math.abs(m.d) || 0.5, f: m.a < 0 ? -1 : 1 };
-      } catch (e) { return cur; }
+        return { x: m.m41, y: m.m42, s: Math.abs(m.a) || 0.5 };
+      } catch (e) { return { x: cur.x, y: cur.y, s: cur.s }; }
     }
 
-    // One flight: a sampled cubic arc from the live position to `to`, facing
-    // the travel direction. Signed scaleX interpolates through zero on
-    // direction changes, so the bird banks and turns instead of flipping.
+    // One flight: a sampled cubic arc from the live position to `to`. The bird
+    // turns to face the travel direction as it sets off (the wrapper's CSS
+    // transition makes the flip read as a quick bank), and takes `to.f` on
+    // landing when specified.
     function segment(to, dur, opts, done) {
       opts = opts || {};
       var g = GEN;
       var from = livePos();
       var dx = to.x - from.x;
-      var f = Math.abs(dx) < 4 ? (to.f || from.f) : (dx >= 0 ? 1 : -1);
+      var f = Math.abs(dx) < 4 ? (to.f || facing()) : (dx >= 0 ? 1 : -1);
       if (to.z != null) el.style.zIndex = to.z;
       el.style.visibility = 'visible';
+      setFacing(f);
       var lift = opts.lift || 0;
       var c1, c2;
       if (lift) {
@@ -94,21 +113,19 @@
         c1 = { x: from.x + dx * 0.33, y: from.y + (to.y - from.y) * 0.33 };
         c2 = { x: from.x + dx * 0.66, y: from.y + (to.y - from.y) * 0.66 };
       }
-      var sx0 = from.f * from.s, sx1 = f * to.s;
       var frames = [], STEPS = 10;
       for (var i = 0; i <= STEPS; i++) {
         var t = i / STEPS, u = 1 - t;
         var x = u * u * u * from.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * to.x;
         var y = u * u * u * from.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * to.y;
-        var sx = sx0 + (sx1 - sx0) * t;
-        var sy = from.s + (to.s - from.s) * t;
-        frames.push({ transform: 'translate(' + x + 'px,' + y + 'px) scale(' + sx + ',' + sy + ')' });
+        var s = from.s + (to.s - from.s) * t;
+        frames.push({ transform: 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')' });
       }
       if (anim) { try { anim.cancel(); } catch (e) {} }
       anim = el.animate(frames, { duration: dur, easing: opts.easing || 'ease-in-out', fill: 'forwards' });
       anim.onfinish = function () {
         if (g !== GEN) return;
-        place({ x: to.x, y: to.y, s: to.s, f: f });
+        place({ x: to.x, y: to.y, s: to.s, f: to.f || f });
         try { anim.cancel(); } catch (e) {}
         anim = null;
         if (done) done();

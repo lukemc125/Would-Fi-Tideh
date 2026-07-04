@@ -210,7 +210,12 @@ html.js .site-footer {
 /* Lives in document space (absolute, not fixed) so it scrolls with the page
    like part of the world. JS moves it between z-index 1 (behind the cards,
    which sit at 2) and 8 (in front; still under the sticky header at 10). */
-.doctor-bird { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; visibility: hidden; will-change: transform; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+.doctor-bird { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; visibility: hidden; will-change: transform; transform-origin: 0 0; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+/* Left/right facing lives on this wrapper as a transitioned class flip, kept
+   out of the outer flight animation (sign-flipping scale inside animation
+   keyframes made the bird vanish mid-turn in some engines). */
+.doctor-bird .bird-flip { transition: transform 0.26s ease; }
+.doctor-bird.facing-left .bird-flip { transform: scaleX(-1); }
 .daily-card, .wow-studio, .podcast, .legends-inner { position: relative; z-index: 2; }
 
 /* ===== Yaad radio studio ===== */
