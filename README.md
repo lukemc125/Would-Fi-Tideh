@@ -16,8 +16,8 @@ Donald Thompson's "Wud fi Tideh" podcast.
   mouth along as their lines play, under an ON AIR sign and an audio-driven VU
   meter, with an optional synthesized island-ambience toggle (surf by day,
   crickets at night).
-- The **Doctor Bird** — Jamaica's national hummingbird — patrols the page in a
-  lazy loop, weaving in front of and behind the cards, and lands on the
+- The **Doctor Bird** — Jamaica's national hummingbird — hovers beside whatever
+  you're reading, flies over to follow you when you scroll, and lands on the
   shoulder of whoever is speaking during a radio session.
 
 ## Run it

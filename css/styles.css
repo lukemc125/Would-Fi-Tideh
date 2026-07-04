@@ -243,6 +243,7 @@ html.js .site-footer {
   .sky-star { animation: star-twinkle 3.4s ease-in-out infinite; }
   .doctor-bird:not(.perched) .bird-wing { transform-box: fill-box; transform-origin: 65% 92%; animation: wing-flap 0.11s linear infinite alternate; }
   .doctor-bird.perched .bird-inner { animation: bird-bob 1.9s ease-in-out infinite; }
+  .doctor-bird.hovering .bird-inner { animation: bird-hover 3.6s ease-in-out infinite; }
   .on-air.live .on-air-dot { animation: onair-pulse 1.1s ease-in-out infinite; }
 }
 @keyframes cloud-drift { from { transform: translateX(-25vw); } to { transform: translateX(110vw); } }
@@ -250,3 +251,4 @@ html.js .site-footer {
 @keyframes wing-flap { from { transform: rotate(-16deg); } to { transform: rotate(28deg); } }
 @keyframes onair-pulse { 50% { opacity: 0.35; } }
 @keyframes bird-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes bird-hover { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(5px, -9px); } 55% { transform: translate(-2px, -14px); } 80% { transform: translate(-6px, -5px); } }

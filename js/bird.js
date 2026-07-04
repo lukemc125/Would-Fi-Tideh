@@ -1,11 +1,11 @@
-// The Doctor Bird — Jamaica's national red-billed streamertail. It lives in the
-// page's world (document coordinates, not the viewport): when idle it circles
-// in a lazy patrol loop, weaving BEHIND the cards along the top of its arc and
-// IN FRONT of them along the bottom; during a radio session it flies to the
-// shoulder of whichever host is speaking and hops between them. Every move is
-// a flight — never a teleport: even direction changes bank through a turn
-// (signed scaleX interpolates through zero). Purely decorative: pointer-events
-// none, aria-hidden, disabled under reduced motion / without Web Animations.
+// The Doctor Bird — Jamaica's national red-billed streamertail. It idles in a
+// gentle hover beside whatever you're reading, and when you scroll somewhere
+// else it flies over to join you (a real flight — never a teleport; direction
+// changes bank through a turn). During a radio session it lands on the
+// shoulder of whichever host is speaking and hops between them. A watchdog
+// re-summons it if it's ever left out of view, so it can't disappear.
+// Purely decorative: pointer-events none, aria-hidden, disabled under reduced
+// motion / without Web Animations.
 (function (root) {
   'use strict';
   var api = { perchOnHost: function () {}, release: function () {} };
@@ -31,7 +31,7 @@
     '</svg>';
 
   var BW = 92, BH = 66;
-  var FRONT = 8, BACK = 1; // cards sit at z-index 2; header stays above at 10
+  var FRONT = 8; // above the cards (z2), below the sticky header (z10)
 
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
@@ -46,10 +46,11 @@
     document.body.appendChild(el);
 
     var cur = { x: -160, y: 160, s: 0.5, f: 1 };
-    var mode = 'boot';   // boot | idle | transit | perch
+    var mode = 'boot';   // boot | idle | settle | transit | perch
     var perched = null;  // 'a' | 'b'
     var anim = null;
-    var GEN = 0;         // generation token: bumping it abandons any pending chain
+    var GEN = 0;         // generation token: bumping it abandons pending flights
+    var flitTimer = null, followTimer = null;
 
     function place(t) {
       cur = { x: t.x, y: t.y, s: t.s, f: t.f };
@@ -72,10 +73,9 @@
       } catch (e) { return cur; }
     }
 
-    // One flight segment: a sampled cubic arc from the live position to `to`,
-    // facing the direction of travel. Signed scaleX runs from (from.f*from.s)
-    // to (f*to.s), so a direction change thins the bird through zero mid-air —
-    // it banks and turns instead of mirror-flipping.
+    // One flight: a sampled cubic arc from the live position to `to`, facing
+    // the travel direction. Signed scaleX interpolates through zero on
+    // direction changes, so the bird banks and turns instead of flipping.
     function segment(to, dur, opts, done) {
       opts = opts || {};
       var g = GEN;
@@ -115,37 +115,75 @@
       };
     }
 
-    function chain(list, dur, done) {
-      var g = GEN;
-      (function next(i) {
-        if (g !== GEN) return;
-        if (i >= list.length) { if (done) done(); return; }
-        segment(list[i], dur, { easing: 'linear' }, function () { next(i + 1); });
-      })(0);
+    // ---- Idle: hover beside what the reader is looking at ----
+
+    function inView() {
+      var p = livePos();
+      return p.x > window.scrollX - 30 && p.x < window.scrollX + window.innerWidth - 24 &&
+             p.y > window.scrollY + 70 && p.y < window.scrollY + window.innerHeight - 30;
     }
 
-    // ---- Idle patrol: a lazy oval around whatever is on screen. The top arc
-    // passes BEHIND the cards (smaller, further away); the bottom arc sweeps
-    // IN FRONT of them. Each lap re-anchors to the current viewport, so after
-    // a scroll the bird comes to where the reader is. ----
-    function runLap() {
-      if (mode !== 'idle') return;
+    // A calm spot in the current viewport: beside the content column on wide
+    // screens, tucked toward the top-right on narrow ones.
+    function idleSpot() {
       var vw = window.innerWidth, vh = window.innerHeight;
-      var cx = window.scrollX + vw / 2;
-      var cy = window.scrollY + Math.max(200, vh * 0.42);
-      var rx = Math.max(220, Math.min(vw * 0.38, 540));
-      var ry = Math.max(100, Math.min(vh * 0.22, 220));
-      var from = livePos();
-      var a0 = Math.atan2((from.y - cy) / ry || 0.001, (from.x - cx) / rx || 0.001);
-      var N = 12, segs = [];
-      for (var i = 1; i <= N; i++) {
-        var a = a0 + i * (Math.PI * 2 / N);
-        var y = cy + ry * Math.sin(a);
-        var front = y > cy;
-        segs.push({ x: cx + rx * Math.cos(a), y: y, s: front ? 0.56 : 0.4, z: front ? FRONT : BACK });
-      }
-      chain(segs, 1150, runLap);
+      var contentRight = (vw + 760) / 2;
+      var xv = vw > 1000 ? Math.min(vw - 150, contentRight + 26) : vw - 132;
+      var yv = Math.max(96, vh * 0.2);
+      return {
+        x: window.scrollX + xv + (Math.random() * 24 - 12),
+        y: window.scrollY + yv + (Math.random() * 18 - 9),
+        s: 0.5, z: FRONT
+      };
     }
+
+    function settleTo(spot, dur, lift) {
+      mode = 'settle';
+      el.classList.remove('perched', 'hovering');
+      cancelFlight();
+      segment(spot, dur, { lift: lift }, function () {
+        mode = 'idle';
+        el.classList.add('hovering');
+        scheduleFlit();
+      });
+    }
+
+    function goIdle() { settleTo(idleSpot(), 1200, 60); }
+
+    // Follow the reader: when scrolling settles and the bird was left behind,
+    // it flies to the new viewport.
+    function queueFollow() {
+      if (mode !== 'idle') return;
+      clearTimeout(followTimer);
+      followTimer = setTimeout(function () {
+        if (mode === 'idle' && !inView()) goIdle();
+      }, 420);
+    }
+    window.addEventListener('scroll', queueFollow, { passive: true });
+
+    // A small reposition now and then so idling looks alive, not parked.
+    function scheduleFlit() {
+      clearTimeout(flitTimer);
+      flitTimer = setTimeout(function () {
+        if (mode !== 'idle') return;
+        if (!inView()) { goIdle(); return; }
+        var p = livePos();
+        var t = {
+          x: Math.min(Math.max(p.x + (Math.random() * 160 - 80), window.scrollX + 40), window.scrollX + window.innerWidth - 120),
+          y: Math.min(Math.max(p.y + (Math.random() * 70 - 35), window.scrollY + 86), window.scrollY + window.innerHeight - 120),
+          s: 0.5, z: FRONT
+        };
+        settleTo(t, 900, 36);
+      }, 18000 + Math.random() * 14000);
+    }
+
+    // Watchdog: whatever happens, an idle bird out of view (with no flight in
+    // progress) gets summoned back. This is the never-disappear guarantee.
+    setInterval(function () {
+      if (mode !== 'idle' || anim) return;
+      if (!inView()) goIdle();
+      else if (!el.classList.contains('hovering')) el.classList.add('hovering');
+    }, 4000);
 
     // ---- Perch on the speaking host's shoulder (document coordinates) ----
     function perchTarget(voice) {
@@ -168,7 +206,7 @@
       if (!t) return;
       perched = voice;
       mode = 'transit';
-      el.classList.remove('perched');
+      el.classList.remove('perched', 'hovering');
       cancelFlight();
       segment({ x: t.x, y: t.y, s: t.s, f: t.f, z: FRONT }, 950, { lift: 70 }, function () {
         if (perched !== voice) return;
@@ -181,45 +219,42 @@
       if (mode === 'idle' || mode === 'boot') return;
       perched = null;
       el.classList.remove('perched');
-      cancelFlight();
-      mode = 'idle';
-      runLap(); // the lap's first chord lifts it naturally off the shoulder
+      goIdle();
     }
 
-    // Window resized while perched: glide to the shoulder's new spot.
     window.addEventListener('resize', function () {
-      if (mode !== 'perch' || !perched) return;
-      var t = perchTarget(perched);
-      if (!t) return;
-      el.classList.remove('perched');
-      cancelFlight();
-      segment({ x: t.x, y: t.y, s: t.s, f: t.f, z: FRONT }, 400, {}, function () {
-        if (mode === 'perch') el.classList.add('perched');
-      });
+      if (mode === 'perch' && perched) {
+        var t = perchTarget(perched);
+        if (!t) return;
+        el.classList.remove('perched');
+        cancelFlight();
+        segment({ x: t.x, y: t.y, s: t.s, f: t.f, z: FRONT }, 400, {}, function () {
+          if (mode === 'perch') el.classList.add('perched');
+        });
+      } else {
+        queueFollow();
+      }
     });
 
-    // Shuffle: swoop past the Daily Wud, then settle back into the patrol.
+    // Shuffle: swoop over to the Daily Wud and hover there a while.
     var shuffle = document.getElementById('daily-shuffle');
     if (shuffle) shuffle.addEventListener('click', function () {
       if (mode !== 'idle') return;
       var d = document.getElementById('daily');
       if (!d) return;
       var r = d.getBoundingClientRect();
-      cancelFlight();
-      mode = 'idle';
-      segment({
+      settleTo({
         x: r.left + window.scrollX + r.width * 0.72,
         y: r.top + window.scrollY - 26,
         s: 0.6, z: FRONT
-      }, 1500, { lift: 130 }, runLap);
+      }, 1300, 120);
     });
 
     window.setTimeout(function () {
       if (mode !== 'boot') return;
-      place({ x: window.scrollX - 140, y: window.scrollY + 170, s: 0.5, f: 1 });
-      mode = 'idle';
-      runLap();
-    }, 2500);
+      place({ x: window.scrollX - 140, y: window.scrollY + Math.max(120, window.innerHeight * 0.25), s: 0.5, f: 1 });
+      goIdle();
+    }, 2200);
 
     api.perchOnHost = perchOnHost;
     api.release = release;
