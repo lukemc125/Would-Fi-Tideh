@@ -93,6 +93,8 @@
   function initWow() {
     if (!data.length || !window.Radio) return;
     var player = new window.Radio.RadioPlayer();
+    var S = window.Studio;
+    if (S) S.init(player);
     var transcriptEl = document.getElementById('wow-transcript');
     var statusEl = document.getElementById('wow-status');
     var barEl = document.getElementById('wow-progress-bar');
@@ -175,17 +177,19 @@
         paused = false;
         player.resume();
         showPlaying(true);
+        if (S) S.onPlay();
         statusEl.textContent = 'On air…';
         return;
       }
       if (!script.length) newSession();
       player.loadVoices(function () {
         player.play(script, {
-          onLineStart: function (i) { highlight(i); },
-          onEnd: function () { paused = false; showPlaying(false); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+          onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); },
+          onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
           onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
         });
         showPlaying(true);
+        if (S) S.onPlay();
         statusEl.textContent = 'On air…';
       });
     });
@@ -193,10 +197,11 @@
       player.pause();
       paused = true;
       showPaused();
+      if (S) S.onPause();
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
-    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
-    mixBtn.addEventListener('click', function () { paused = false; newSession(); });
+    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+    mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); newSession(); });
 
     newSession();
   }
@@ -227,6 +232,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Theme) window.Theme.initTheme(document, window);
+    if (window.Sky) window.Sky.initSky(document, window);
     initDaily();
     initWow();
     initPodcast();

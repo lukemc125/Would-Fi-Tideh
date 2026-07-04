@@ -9,7 +9,15 @@ Donald Thompson's "Wud fi Tideh" podcast.
   (see "Better voices" below), falling back to the browser voice otherwise.
 - **Legends** — a tribute to Louise Bennett-Coverley ("Miss Lou") and Claude
   McKay, who made Patois a literary language.
-- Day/night theme: **Sunsplash** by day, **Reggae Dusk** by night.
+- Day/night theme: **Sunsplash** by day, **Reggae Dusk** by night — with a
+  living sky in the hero (the sun tracks the visitor's clock; moon and stars
+  after dark).
+- A **yaad radio studio**: illustrated Auntie Pearl & Uncle Roy light up and
+  mouth along as their lines play, under an ON AIR sign and an audio-driven VU
+  meter, with an optional synthesized island-ambience toggle (surf by day,
+  crickets at night).
+- The **Doctor Bird** — Jamaica's national hummingbird — flits across the page
+  now and then.
 
 ## Run it
 
