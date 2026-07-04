@@ -1,8 +1,11 @@
-// The Doctor Bird — Jamaica's national red-billed streamertail. It roams the
-// page now and then, and during a Wuds of Wisdom session it perches on the
-// shoulder of whichever host is speaking (hopping between them as they trade
-// lines). Purely decorative: pointer-events none, aria-hidden, disabled under
-// reduced motion or when the Web Animations API is unavailable.
+// The Doctor Bird — Jamaica's national red-billed streamertail. It lives in the
+// page's world (document coordinates, not the viewport): when idle it circles
+// in a lazy patrol loop, weaving BEHIND the cards along the top of its arc and
+// IN FRONT of them along the bottom; during a radio session it flies to the
+// shoulder of whichever host is speaking and hops between them. Every move is
+// a flight — never a teleport: even direction changes bank through a turn
+// (signed scaleX interpolates through zero). Purely decorative: pointer-events
+// none, aria-hidden, disabled under reduced motion / without Web Animations.
 (function (root) {
   'use strict';
   var api = { perchOnHost: function () {}, release: function () {} };
@@ -28,6 +31,7 @@
     '</svg>';
 
   var BW = 92, BH = 66;
+  var FRONT = 8, BACK = 1; // cards sit at z-index 2; header stays above at 10
 
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
@@ -41,149 +45,181 @@
     el.innerHTML = '<div class="bird-inner">' + SVG + '</div>';
     document.body.appendChild(el);
 
-    var cur = { x: -160, y: 120, s: 1, f: 1 };
-    var mode = 'idle';       // idle | roam | perch
-    var perched = null;      // 'a' | 'b'
-    var flying = false;
-    var roamTimer = null;
+    var cur = { x: -160, y: 160, s: 0.5, f: 1 };
+    var mode = 'boot';   // boot | idle | transit | perch
+    var perched = null;  // 'a' | 'b'
     var anim = null;
+    var GEN = 0;         // generation token: bumping it abandons any pending chain
 
-    function tf(t) { return 'translate(' + t.x + 'px,' + t.y + 'px) scale(' + (t.f * t.s) + ',' + t.s + ')'; }
-    function place(t) { cur = { x: t.x, y: t.y, s: t.s, f: t.f }; el.style.transform = tf(t); }
+    function place(t) {
+      cur = { x: t.x, y: t.y, s: t.s, f: t.f };
+      el.style.transform = 'translate(' + t.x + 'px,' + t.y + 'px) scale(' + (t.f * t.s) + ',' + t.s + ')';
+    }
     place(cur);
 
-    // Live position, so an interrupted flight resumes from where it visibly is.
+    function cancelFlight() {
+      GEN++;
+      if (anim) { try { anim.cancel(); } catch (e) {} anim = null; }
+    }
+
+    // Where the bird visibly is right now, mid-animation included.
     function livePos() {
       var s = getComputedStyle(el).transform;
       if (!s || s === 'none' || typeof DOMMatrixReadOnly === 'undefined') return cur;
       try {
         var m = new DOMMatrixReadOnly(s);
-        return { x: m.m41, y: m.m42, s: Math.abs(m.a) || 1, f: m.a < 0 ? -1 : 1 };
+        return { x: m.m41, y: m.m42, s: Math.abs(m.d) || 0.5, f: m.a < 0 ? -1 : 1 };
       } catch (e) { return cur; }
     }
 
-    function bezier(p0, p1, p2, p3, t) {
-      var u = 1 - t;
-      return {
-        x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-        y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y
-      };
-    }
-
-    function flyTo(target, duration, cb) {
-      flying = true;
-      el.classList.remove('perched');
-      el.style.visibility = 'visible';
+    // One flight segment: a sampled cubic arc from the live position to `to`,
+    // facing the direction of travel. Signed scaleX runs from (from.f*from.s)
+    // to (f*to.s), so a direction change thins the bird through zero mid-air —
+    // it banks and turns instead of mirror-flipping.
+    function segment(to, dur, opts, done) {
+      opts = opts || {};
+      var g = GEN;
       var from = livePos();
-      var lift = Math.min(from.y, target.y) - 44;
-      var c1 = { x: from.x + (target.x - from.x) * 0.3, y: lift };
-      var c2 = { x: from.x + (target.x - from.x) * 0.7, y: lift };
-      var frames = [];
-      for (var i = 0; i <= 16; i++) {
-        var t = i / 16;
-        var p = bezier(from, c1, c2, target, t);
-        var s = from.s + (target.s - from.s) * t;
-        frames.push({ transform: 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + (target.f * s) + ',' + s + ')' });
+      var dx = to.x - from.x;
+      var f = Math.abs(dx) < 4 ? (to.f || from.f) : (dx >= 0 ? 1 : -1);
+      if (to.z != null) el.style.zIndex = to.z;
+      el.style.visibility = 'visible';
+      var lift = opts.lift || 0;
+      var c1, c2;
+      if (lift) {
+        var apex = Math.min(from.y, to.y) - lift;
+        c1 = { x: from.x + dx * 0.3, y: apex };
+        c2 = { x: from.x + dx * 0.7, y: apex };
+      } else {
+        c1 = { x: from.x + dx * 0.33, y: from.y + (to.y - from.y) * 0.33 };
+        c2 = { x: from.x + dx * 0.66, y: from.y + (to.y - from.y) * 0.66 };
+      }
+      var sx0 = from.f * from.s, sx1 = f * to.s;
+      var frames = [], STEPS = 10;
+      for (var i = 0; i <= STEPS; i++) {
+        var t = i / STEPS, u = 1 - t;
+        var x = u * u * u * from.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * to.x;
+        var y = u * u * u * from.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * to.y;
+        var sx = sx0 + (sx1 - sx0) * t;
+        var sy = from.s + (to.s - from.s) * t;
+        frames.push({ transform: 'translate(' + x + 'px,' + y + 'px) scale(' + sx + ',' + sy + ')' });
       }
       if (anim) { try { anim.cancel(); } catch (e) {} }
-      anim = el.animate(frames, { duration: duration, easing: 'ease-in-out', fill: 'forwards' });
+      anim = el.animate(frames, { duration: dur, easing: opts.easing || 'ease-in-out', fill: 'forwards' });
       anim.onfinish = function () {
-        place(target);
+        if (g !== GEN) return;
+        place({ x: to.x, y: to.y, s: to.s, f: f });
         try { anim.cancel(); } catch (e) {}
-        anim = null; flying = false;
-        if (cb) cb();
+        anim = null;
+        if (done) done();
       };
     }
 
-    // ---- Perch on the speaking host's shoulder ----
+    function chain(list, dur, done) {
+      var g = GEN;
+      (function next(i) {
+        if (g !== GEN) return;
+        if (i >= list.length) { if (done) done(); return; }
+        segment(list[i], dur, { easing: 'linear' }, function () { next(i + 1); });
+      })(0);
+    }
+
+    // ---- Idle patrol: a lazy oval around whatever is on screen. The top arc
+    // passes BEHIND the cards (smaller, further away); the bottom arc sweeps
+    // IN FRONT of them. Each lap re-anchors to the current viewport, so after
+    // a scroll the bird comes to where the reader is. ----
+    function runLap() {
+      if (mode !== 'idle') return;
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var cx = window.scrollX + vw / 2;
+      var cy = window.scrollY + Math.max(200, vh * 0.42);
+      var rx = Math.max(220, Math.min(vw * 0.38, 540));
+      var ry = Math.max(100, Math.min(vh * 0.22, 220));
+      var from = livePos();
+      var a0 = Math.atan2((from.y - cy) / ry || 0.001, (from.x - cx) / rx || 0.001);
+      var N = 12, segs = [];
+      for (var i = 1; i <= N; i++) {
+        var a = a0 + i * (Math.PI * 2 / N);
+        var y = cy + ry * Math.sin(a);
+        var front = y > cy;
+        segs.push({ x: cx + rx * Math.cos(a), y: y, s: front ? 0.56 : 0.4, z: front ? FRONT : BACK });
+      }
+      chain(segs, 1150, runLap);
+    }
+
+    // ---- Perch on the speaking host's shoulder (document coordinates) ----
     function perchTarget(voice) {
       var host = document.getElementById(voice === 'a' ? 'host-a' : 'host-b');
       var av = host && host.querySelector('.avatar');
       if (!av) return null;
       var r = av.getBoundingClientRect();
+      var left = r.left + window.scrollX, right = r.right + window.scrollX, top = r.top + window.scrollY;
       var s = 0.5;
       if (voice === 'a') {
-        // left host: perch on the top-left of the avatar, facing in toward her
-        return { x: r.left - BW * s * 0.18, y: r.top - BH * s * 0.30, s: s, f: 1 };
+        return { x: left - BW * s * 0.18, y: top - BH * s * 0.30, s: s, f: 1 };
       }
-      // right host: mirror — top-right of the avatar, facing left toward him
-      return { x: r.right - BW * s * 0.82, y: r.top - BH * s * 0.30, s: s, f: -1 };
+      return { x: right - BW * s * 0.82, y: top - BH * s * 0.30, s: s, f: -1 };
     }
 
     function perchOnHost(voice) {
       if (voice !== 'a' && voice !== 'b') return;
-      if (perched === voice && mode === 'perch') return;
-      if (roamTimer) { clearTimeout(roamTimer); roamTimer = null; }
-      var target = perchTarget(voice);
-      if (!target) return;
-      mode = 'perch'; perched = voice;
-      flyTo(target, 700, function () {
-        if (mode === 'perch' && perched === voice) el.classList.add('perched');
+      if (mode === 'perch' && perched === voice) return;
+      var t = perchTarget(voice);
+      if (!t) return;
+      perched = voice;
+      mode = 'transit';
+      el.classList.remove('perched');
+      cancelFlight();
+      segment({ x: t.x, y: t.y, s: t.s, f: t.f, z: FRONT }, 950, { lift: 70 }, function () {
+        if (perched !== voice) return;
+        mode = 'perch';
+        el.classList.add('perched');
       });
     }
 
     function release() {
-      if (mode === 'idle') return;
+      if (mode === 'idle' || mode === 'boot') return;
+      perched = null;
       el.classList.remove('perched');
-      perched = null; mode = 'idle';
-      flyTo({ x: window.innerWidth + 170, y: 60 + Math.random() * 80, s: 1, f: -1 }, 1400, function () {
-        el.style.visibility = 'hidden';
-        place({ x: -160, y: 120, s: 1, f: 1 });
-        scheduleRoam();
+      cancelFlight();
+      mode = 'idle';
+      runLap(); // the lap's first chord lifts it naturally off the shoulder
+    }
+
+    // Window resized while perched: glide to the shoulder's new spot.
+    window.addEventListener('resize', function () {
+      if (mode !== 'perch' || !perched) return;
+      var t = perchTarget(perched);
+      if (!t) return;
+      el.classList.remove('perched');
+      cancelFlight();
+      segment({ x: t.x, y: t.y, s: t.s, f: t.f, z: FRONT }, 400, {}, function () {
+        if (mode === 'perch') el.classList.add('perched');
       });
-    }
+    });
 
-    // Keep a perched bird glued to the shoulder as the page scrolls/resizes.
-    var ticking = false;
-    function follow() {
-      if (mode !== 'perch' || flying || !perched || ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-        if (mode !== 'perch' || flying || !perched) return;
-        var t = perchTarget(perched);
-        if (t) place(t);
-      });
-    }
-    window.addEventListener('scroll', follow, { passive: true });
-    window.addEventListener('resize', follow);
-
-    // ---- Ambient roaming (only when not tied to the radio) ----
-    function roamFlight(quick) {
-      if (mode !== 'idle') return;
-      mode = 'roam';
-      var vw = window.innerWidth;
-      var hover = { x: vw * 0.6, y: 150, s: 1, f: 1 };
-      var daily = document.getElementById('daily');
-      if (daily) {
-        var r = daily.getBoundingClientRect();
-        if (r.bottom > 90 && r.top < window.innerHeight - 120) {
-          hover = { x: Math.min(r.right - 70, vw - 160), y: Math.max(80, r.top - 18), s: 1, f: 1 };
-        }
-      }
-      place({ x: -160, y: 100 + Math.random() * 140, s: 1, f: 1 });
-      el.style.visibility = 'visible';
-      flyTo(hover, quick ? 3200 : 5000, function () {
-        window.setTimeout(function () {
-          if (mode !== 'roam') return;
-          flyTo({ x: window.innerWidth + 170, y: 50 + Math.random() * 90, s: 1, f: -1 }, 4200, function () {
-            el.style.visibility = 'hidden'; mode = 'idle';
-            place({ x: -160, y: 120, s: 1, f: 1 });
-            scheduleRoam();
-          });
-        }, 1500);
-      });
-    }
-
-    function scheduleRoam() {
-      if (roamTimer) clearTimeout(roamTimer);
-      roamTimer = window.setTimeout(function () { roamFlight(false); }, 60000 + Math.random() * 60000);
-    }
-
-    window.setTimeout(function () { roamFlight(false); }, 3000);
-    scheduleRoam();
+    // Shuffle: swoop past the Daily Wud, then settle back into the patrol.
     var shuffle = document.getElementById('daily-shuffle');
-    if (shuffle) shuffle.addEventListener('click', function () { roamFlight(true); });
+    if (shuffle) shuffle.addEventListener('click', function () {
+      if (mode !== 'idle') return;
+      var d = document.getElementById('daily');
+      if (!d) return;
+      var r = d.getBoundingClientRect();
+      cancelFlight();
+      mode = 'idle';
+      segment({
+        x: r.left + window.scrollX + r.width * 0.72,
+        y: r.top + window.scrollY - 26,
+        s: 0.6, z: FRONT
+      }, 1500, { lift: 130 }, runLap);
+    });
+
+    window.setTimeout(function () {
+      if (mode !== 'boot') return;
+      place({ x: window.scrollX - 140, y: window.scrollY + 170, s: 0.5, f: 1 });
+      mode = 'idle';
+      runLap();
+    }, 2500);
 
     api.perchOnHost = perchOnHost;
     api.release = release;
