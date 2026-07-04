@@ -237,10 +237,12 @@ html.js .site-footer {
   .sky-cloud-1 { animation: cloud-drift 140s linear infinite reverse; }
   .sky-cloud-2 { animation: cloud-drift 110s linear infinite; }
   .sky-star { animation: star-twinkle 3.4s ease-in-out infinite; }
-  .bird-wing { transform-origin: 62px 40px; animation: wing-flap 0.12s linear infinite alternate; }
+  .doctor-bird:not(.perched) .bird-wing { transform-box: fill-box; transform-origin: 65% 92%; animation: wing-flap 0.11s linear infinite alternate; }
+  .doctor-bird.perched .bird-inner { animation: bird-bob 1.9s ease-in-out infinite; }
   .on-air.live .on-air-dot { animation: onair-pulse 1.1s ease-in-out infinite; }
 }
 @keyframes cloud-drift { from { transform: translateX(-25vw); } to { transform: translateX(110vw); } }
 @keyframes star-twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.95; } }
-@keyframes wing-flap { from { transform: rotate(-18deg); } to { transform: rotate(26deg); } }
+@keyframes wing-flap { from { transform: rotate(-16deg); } to { transform: rotate(28deg); } }
 @keyframes onair-pulse { 50% { opacity: 0.35; } }
+@keyframes bird-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }

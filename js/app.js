@@ -94,6 +94,7 @@
     if (!data.length || !window.Radio) return;
     var player = new window.Radio.RadioPlayer();
     var S = window.Studio;
+    var B = window.Bird;
     if (S) S.init(player);
     var transcriptEl = document.getElementById('wow-transcript');
     var statusEl = document.getElementById('wow-status');
@@ -184,8 +185,8 @@
       if (!script.length) newSession();
       player.loadVoices(function () {
         player.play(script, {
-          onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); },
-          onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+          onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); if (B) B.perchOnHost(line.voice); },
+          onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); if (B) B.release(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
           onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
         });
         showPlaying(true);
@@ -200,8 +201,8 @@
       if (S) S.onPause();
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
-    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
-    mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); newSession(); });
+    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); if (B) B.release(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+    mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); if (B) B.release(); newSession(); });
 
     newSession();
   }
