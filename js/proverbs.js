@@ -24,6 +24,28 @@
     return count > 0 ? h % count : 0;
   }
 
+  // Deterministic RNG (mulberry32) seeded from a string — same date string,
+  // same sequence, on every visit and every device.
+  function seededRng(str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) {
+      h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+    }
+    h = Math.imul(h ^ (h >>> 15), 2654435761) >>> 0;
+    var seed = (h ^ (h >>> 13)) >>> 0;
+    return function () {
+      seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // The day's fixed random selection: same n proverbs for everyone all day.
+  function dailyPicks(items, dateStr, n) {
+    return pickN(items, n, seededRng(dateStr));
+  }
+
   function pickN(items, n, rng) {
     rng = rng || Math.random;
     var pool = items.slice();
@@ -116,6 +138,8 @@
   return {
     DEFAULT_HOSTS: DEFAULT_HOSTS,
     dailyIndex: dailyIndex,
+    seededRng: seededRng,
+    dailyPicks: dailyPicks,
     pickN: pickN,
     randomIndexExcluding: randomIndexExcluding,
     generateScript: generateScript,

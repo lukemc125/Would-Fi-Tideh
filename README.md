@@ -3,10 +3,12 @@
 A colourful, self-contained web page celebrating Jamaican Patois proverbs from
 Donald Thompson's "Wud fi Tideh" podcast.
 
-- **The Daily Wud** — today's proverb with its English translation and meaning.
-- **Wuds of Wisdom** — five random proverbs turned into a two-host radio
-  segment with a live transcript. Plays authentic per-proverb clips when present
-  (see "Better voices" below), falling back to the browser voice otherwise.
+- **The Daily Wud** — today's proverb with its English translation and meaning,
+  plus up to two shuffles: 3 wuds per day, then come back tomorrow.
+- **Wuds of Wisdom** — the day's five proverbs (randomly chosen but fixed for
+  the day, fresh tomorrow) as a two-host radio segment with a live transcript.
+  Proverb lines prefer Donald's real recordings (see "Real recordings" below),
+  then the generated clips, then the browser voice.
 - **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
   di blank, build di phrase from word chips, ear tests on the authentic audio,
   and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
@@ -34,6 +36,17 @@ python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
 (Open over http rather than file:// so the audio and fonts load cleanly.)
+
+## Real recordings
+
+The spreadsheet's "Audio File" column names a real recording for every proverb
+(`<slug>.ogg` or `<slug>.mp3`). Drop those files into `audio/recordings/` —
+keeping the exact filenames — and commit them. Wherever a proverb is spoken
+(Daily Wud "Hear it", the patois lines in Wuds of Wisdom), the site plays the
+real recording first, falling back to the generated clip (and then the browser
+voice) if the file is missing or the browser can't decode it. The quiz's ear
+tests deliberately stay on the generated clips so the blanked word is always a
+clean, single phrase.
 
 ## Add the original podcast
 

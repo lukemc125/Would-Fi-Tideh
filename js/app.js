@@ -30,14 +30,55 @@
     document.getElementById('daily-reset').hidden = !!isToday;
   }
 
+  // At most 3 daily wuds per calendar day: today's wud plus two shuffles.
+  var DAILY_LIMIT = 3;
+  var dayState = { date: '', seen: [] };
+
+  function loadDayState() {
+    try {
+      var raw = localStorage.getItem('wft-daily');
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && s.date === todayStr() && Array.isArray(s.seen) && s.seen.length) { dayState = s; return; }
+      }
+    } catch (e) {}
+    dayState = { date: todayStr(), seen: [todayIdx] };
+    saveDayState();
+  }
+  function saveDayState() { try { localStorage.setItem('wft-daily', JSON.stringify(dayState)); } catch (e) {} }
+
+  function renderDailyMeta() {
+    var left = Math.max(0, DAILY_LIMIT - dayState.seen.length);
+    var btn = document.getElementById('daily-shuffle');
+    var note = document.getElementById('daily-left');
+    btn.disabled = left === 0;
+    if (note) {
+      note.textContent = left > 0
+        ? left + ' more wud' + (left === 1 ? '' : 's') + ' fi tideh'
+        : 'Dat a di ' + DAILY_LIMIT + ' fi tideh — come back tomorrow!';
+    }
+  }
+
   function initDaily() {
     if (!data.length) return;
     todayIdx = P.dailyIndex(todayStr(), data.length);
+    loadDayState();
     renderDaily(todayIdx, true);
+    renderDailyMeta();
 
     document.getElementById('daily-shuffle').addEventListener('click', function () {
-      renderDaily(P.randomIndexExcluding(data.length, dailyIdx), false);
-      hearProverb(data[dailyIdx]);
+      if (dayState.seen.length >= DAILY_LIMIT) { renderDailyMeta(); return; }
+      var unseen = [];
+      for (var i = 0; i < data.length; i++) {
+        if (dayState.seen.indexOf(i) < 0) unseen.push(i);
+      }
+      if (!unseen.length) return;
+      var idx = unseen[Math.floor(Math.random() * unseen.length)];
+      dayState.seen.push(idx);
+      saveDayState();
+      renderDaily(idx, false);
+      renderDailyMeta();
+      hearProverb(data[idx]);
     });
     document.getElementById('daily-reset').addEventListener('click', function () {
       renderDaily(todayIdx, true);
@@ -72,22 +113,39 @@
     }
   }
 
-  // Play a proverb's pre-generated authentic clip; fall back to browser speech
-  // if the clip is missing or won't play.
+  // The real recording from the spreadsheet's Audio File column, when present.
+  function recUrl(p) { return p && p.audio ? 'audio/recordings/' + encodeURIComponent(p.audio) : null; }
+
+  // Play a proverb aloud, preferring Donald's real recording, then the
+  // generated clip, then browser speech. (The recording can also fail on
+  // browsers that can't decode .ogg — the chain covers that too.)
   var dailyAudio = null;
   function hearProverb(p) {
     if (!p) return;
     if (dailyAudio) { try { dailyAudio.pause(); } catch (e) {} dailyAudio = null; }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (typeof Audio === 'undefined') { speak(p.original); return; }
+    var sources = [];
+    if (recUrl(p)) sources.push(recUrl(p));
+    sources.push(clipUrl(p.slug));
     var a = new Audio();
     dailyAudio = a;
-    var done = false;
-    function fallback() { if (done) return; done = true; if (dailyAudio === a) speak(p.original); }
-    a.onerror = fallback;
-    a.src = clipUrl(p.slug);
-    var pr = a.play();
-    if (pr && pr.catch) pr.catch(fallback);
+    var si = 0, advancing = false;
+    function tryNext() {
+      if (dailyAudio !== a) return;
+      if (si >= sources.length) { speak(p.original); return; }
+      a.src = sources[si++];
+      var pr = a.play();
+      if (pr && pr.catch) pr.catch(fail);
+    }
+    function fail() {
+      // 'error' event and play() rejection can both fire for one source.
+      if (advancing || dailyAudio !== a) return;
+      advancing = true;
+      setTimeout(function () { advancing = false; tryNext(); }, 0);
+    }
+    a.onerror = fail;
+    tryNext();
   }
 
   function initWow() {
@@ -102,7 +160,6 @@
     var playBtn = document.getElementById('wow-play');
     var pauseBtn = document.getElementById('wow-pause');
     var stopBtn = document.getElementById('wow-stop');
-    var mixBtn = document.getElementById('wow-mix');
     var script = [];
     var paused = false;
 
@@ -148,15 +205,24 @@
     function newSession() {
       player.stop();
       paused = false;
-      var picks = window.Proverbs.pickN(data, 5);
-      script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS);
-      // Map every line to its authentic clip; browser TTS fills any gaps.
+      // Today's five: seeded by the date, so the session is fixed for the day
+      // (same picks and same banter for every visit) and fresh tomorrow.
+      var rng = window.Proverbs.seededRng(todayStr());
+      var picks = window.Proverbs.dailyPicks(data, todayStr(), 5);
+      script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS, rng);
+      // Every line gets audio: patois lines prefer the real recording (falling
+      // back to the generated clip), other lines use their clip; TTS fills gaps.
       script.forEach(function (line) {
         var key = clipKeyFor(line, picks);
-        if (key) line.audioSrc = clipUrl(key);
+        if (!key) return;
+        line.audioSrc = clipUrl(key);
+        if (line.kind === 'patois') {
+          var rec = recUrl(picks[line.proverb]);
+          if (rec) { line.audioAlt = line.audioSrc; line.audioSrc = rec; }
+        }
       });
       renderTranscript();
-      statusEl.textContent = 'Press play fi hear Auntie Pearl an Uncle Roy.';
+      statusEl.textContent = 'Di day’s five ready — press play fi hear Auntie Pearl an Uncle Roy.';
       showPlaying(false);
     }
 
@@ -202,7 +268,6 @@
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
     stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); if (B) B.release(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
-    mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); if (B) B.release(); newSession(); });
 
     newSession();
   }

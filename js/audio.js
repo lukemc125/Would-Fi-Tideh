@@ -77,14 +77,22 @@
     else this._speak(line);
   };
 
-  RadioPlayer.prototype._playClip = function (line) {
+  // Play line.audioSrc; on failure fall back to line.audioAlt (e.g. a real
+  // recording the browser can't decode falls back to the generated clip),
+  // and only then to speech.
+  RadioPlayer.prototype._playClip = function (line, src, alt) {
     var self = this, a = this.audio, settled = false;
+    if (src == null) { src = line.audioSrc; alt = line.audioAlt || null; }
     this.mode = 'clip';
     function clear() { a.onended = null; a.onerror = null; }
-    function onErr() { if (settled) return; settled = true; clear(); self._speak(line); } // clip missing -> speak
+    function onErr() {
+      if (settled) return; settled = true; clear();
+      if (alt) self._playClip(line, alt, null);
+      else self._speak(line);
+    }
     a.onended = function () { if (settled) return; settled = true; clear(); self._next(); };
     a.onerror = onErr;
-    try { a.src = line.audioSrc; } catch (e) { onErr(); return; }
+    try { a.src = src; } catch (e) { onErr(); return; }
     var p = a.play();
     if (p && p.catch) p.catch(onErr);
   };
