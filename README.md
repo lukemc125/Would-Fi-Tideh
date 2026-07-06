@@ -7,6 +7,11 @@ Donald Thompson's "Wud fi Tideh" podcast.
 - **Wuds of Wisdom** — five random proverbs turned into a two-host radio
   segment with a live transcript. Plays authentic per-proverb clips when present
   (see "Better voices" below), falling back to the browser voice otherwise.
+- **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
+  di blank, build di phrase from word chips, ear tests on the authentic audio,
+  and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
+  a daily streak, synthesized sound effects and confetti. Progress lives in
+  localStorage; no accounts.
 - **Legends** — a tribute to Louise Bennett-Coverley ("Miss Lou") and Claude
   McKay, who made Patois a literary language.
 - Day/night theme: **Sunsplash** by day, **Reggae Dusk** by night — with a
