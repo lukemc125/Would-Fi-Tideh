@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=9" />
+  <link rel="stylesheet" href="css/styles.css?v=10" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -30,7 +30,6 @@
       <a href="#daily">Daily Wud</a>
       <a href="#wow">Wuds of Wisdom</a>
       <a href="#original">The Original</a>
-      <a href="#quiz">Quiz</a>
       <a href="#legends">Legends</a>
     </nav>
     <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"></button>
@@ -43,22 +42,38 @@
       <div class="flag-rule" aria-hidden="true"><span></span><span></span><span></span></div>
     </section>
 
-    <section id="daily" class="section" data-reveal>
-      <article class="daily-card">
-        <div class="card-top">
-          <span class="eyebrow">The Daily Wud</span>
-          <span id="daily-date" class="date"></span>
+    <section id="board" class="bento" data-reveal>
+      <div class="bento-grid">
+        <article id="daily" class="daily-card">
+          <div class="card-top">
+            <span class="eyebrow">The Daily Wud</span>
+            <span id="daily-date" class="date"></span>
+          </div>
+          <p id="daily-original" class="patois"></p>
+          <p id="daily-english" class="english"></p>
+          <p id="daily-meaning" class="meaning"></p>
+          <div class="actions">
+            <button id="daily-hear" class="btn btn-green" type="button"><i class="ti ti-volume" aria-hidden="true"></i> Hear it</button>
+            <button id="daily-shuffle" class="btn btn-gold" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Gimme anodda one</button>
+            <button id="daily-reset" class="btn btn-ghost" type="button" hidden><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Back to today</button>
+          </div>
+          <p id="daily-left" class="daily-left" role="status"></p>
+        </article>
+        <div class="b-tile b-quiz">
+          <h3><i class="ti ti-school" aria-hidden="true"></i> Test yu Patois</h3>
+          <span class="b-sub"><i class="ti ti-flame" aria-hidden="true"></i> <span id="quiz-streak">0</span>-day streak &middot; <span id="quiz-rank">Newcomer</span> &middot; Best <span id="quiz-best">0</span></span>
+          <button id="quiz-start" class="btn" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> Start a round</button>
         </div>
-        <p id="daily-original" class="patois"></p>
-        <p id="daily-english" class="english"></p>
-        <p id="daily-meaning" class="meaning"></p>
-        <div class="actions">
-          <button id="daily-hear" class="btn btn-green" type="button"><i class="ti ti-volume" aria-hidden="true"></i> Hear it</button>
-          <button id="daily-shuffle" class="btn btn-gold" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Gimme anodda one</button>
-          <button id="daily-reset" class="btn btn-ghost" type="button" hidden><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Back to today</button>
+        <div class="b-tile b-radio">
+          <h3><i class="ti ti-radio" aria-hidden="true"></i> Wuds of Wisdom</h3>
+          <span class="b-sub">Di day&rsquo;s five &middot; Auntie Pearl &amp; Uncle Roy</span>
+          <button id="radio-jump" class="btn btn-green" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> On air</button>
         </div>
-        <p id="daily-left" class="daily-left" role="status"></p>
-      </article>
+      </div>
+      <div class="bento-row">
+        <button class="b-mini b-orig" type="button" data-jump="#original"><i class="ti ti-disc" aria-hidden="true"></i> Hear the Original <small>Donald Thompson&rsquo;s podcast</small></button>
+        <button class="b-mini b-leg" type="button" data-jump="#legends"><i class="ti ti-feather" aria-hidden="true"></i> The Voice of the People <small>Miss Lou &amp; McKay</small></button>
+      </div>
     </section>
 
     <section id="wow" class="section" data-reveal>
@@ -133,20 +148,6 @@
       </div>
     </section>
 
-    <section id="quiz" class="section" data-reveal>
-      <div class="quiz-card">
-        <span class="eyebrow">Test yu Patois</span>
-        <h2>How sweet yu patois?</h2>
-        <p class="quiz-sub">Fill di blanks, build di phrase, an train yu ears — yaad edition.</p>
-        <div class="quiz-stats">
-          <span class="quiz-stat"><i class="ti ti-medal" aria-hidden="true"></i> <span id="quiz-rank">Newcomer</span></span>
-          <span class="quiz-stat"><i class="ti ti-flame" aria-hidden="true"></i> <span id="quiz-streak">0</span>-day streak</span>
-          <span class="quiz-stat"><i class="ti ti-star" aria-hidden="true"></i> Best <span id="quiz-best">0</span></span>
-        </div>
-        <button id="quiz-start" class="btn btn-orange" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> Start a round</button>
-      </div>
-    </section>
-
     <section id="legends" class="legends" data-reveal>
       <div class="legends-inner">
         <p class="eyebrow center">A weh wi come from</p>
@@ -208,6 +209,6 @@
   <script src="js/studio.js?v=1"></script>
   <script src="js/quiz.js?v=1"></script>
   <script src="js/quiz-ui.js?v=1"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

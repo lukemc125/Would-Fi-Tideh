@@ -296,12 +296,34 @@
     try { audio.load(); } catch (e) {}
   }
 
+  // Bento launcher tiles: radio tile scrolls to the studio and starts the
+  // session; mini tiles jump to their sections.
+  function initBoard() {
+    var radio = document.getElementById('radio-jump');
+    if (radio) radio.addEventListener('click', function () {
+      var wow = document.getElementById('wow');
+      if (wow) wow.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
+      var play = document.getElementById('wow-play');
+      if (play && !play.hidden && !play.disabled) play.click();
+    });
+    var minis = document.querySelectorAll('.b-mini[data-jump]');
+    for (var i = 0; i < minis.length; i++) {
+      (function (b) {
+        b.addEventListener('click', function () {
+          var t = document.querySelector(b.getAttribute('data-jump'));
+          if (t) t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
+        });
+      })(minis[i]);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Theme) window.Theme.initTheme(document, window);
     if (window.Sky) window.Sky.initSky(document, window);
     initDaily();
     initWow();
     initPodcast();
+    initBoard();
   });
 
   // Exposed for later tasks (Wuds of Wisdom, podcast) to extend.
