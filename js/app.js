@@ -317,6 +317,20 @@
     }
   }
 
+  // Legends photos: a real black-and-white portrait shows when its file is
+  // present; if it 404s (or can't decode) the image removes itself and the
+  // monogram beneath shows through.
+  function initPortraits() {
+    var imgs = document.querySelectorAll('.portrait-img');
+    for (var i = 0; i < imgs.length; i++) {
+      (function (img) {
+        function fail() { img.style.display = 'none'; }
+        img.addEventListener('error', fail);
+        if (img.complete && img.naturalWidth === 0) fail();
+      })(imgs[i]);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (window.Theme) window.Theme.initTheme(document, window);
     if (window.Sky) window.Sky.initSky(document, window);
@@ -324,6 +338,7 @@
     initWow();
     initPodcast();
     initBoard();
+    initPortraits();
   });
 
   // Exposed for later tasks (Wuds of Wisdom, podcast) to extend.

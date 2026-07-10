@@ -123,8 +123,11 @@ body {
 .legend-cards { display: flex; gap: 14px; flex-wrap: wrap; }
 .legend-card { flex: 1; min-width: 200px; background: var(--legends-card); border-radius: var(--radius-sm); padding: 18px; text-align: center; }
 .legend-card .portrait { margin: 0 auto 10px; }
-.portrait { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--green); color: var(--gold-bright); font-family: var(--font-serif); font-weight: 700; font-size: 17px; flex-shrink: 0; }
-.portrait-lg { width: 64px; height: 64px; font-size: 21px; }
+.portrait { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--green); color: var(--gold-bright); font-family: var(--font-serif); font-weight: 700; font-size: 17px; flex-shrink: 0; }
+.portrait-lg { width: 76px; height: 76px; font-size: 24px; box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.25); }
+/* Real black-and-white portrait; sits over the monogram, which shows through
+   if the image is missing (app.js removes an image that fails to load). */
+.portrait-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.06); }
 .legend-feature h3, .legend-card h3 { font-family: var(--font-serif); margin: 0 0 2px; color: var(--legends-ink); }
 .legend-dates { font-size: 12px; color: var(--gold-bright); margin: 0 0 8px; }
 .legend-text { font-size: 13.5px; color: var(--legends-muted); line-height: 1.6; margin: 0; }

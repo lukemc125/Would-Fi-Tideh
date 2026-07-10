@@ -52,6 +52,21 @@ voice) if the file is missing or the browser can't decode it. The quiz's ear
 tests deliberately stay on the generated clips so the blanked word is always a
 clean, single phrase.
 
+## Legend portraits (black-and-white photos)
+
+The Legends memorial shows a real black-and-white portrait for each figure when
+the file is present, and a monogram (LB / MG / CM) until then. Drop images into
+`assets/legends/` with these exact names and commit them:
+
+- `miss-lou.jpg` — Louise Bennett-Coverley
+- `marcus-garvey.jpg` — Marcus Garvey
+- `claude-mckay.jpg` — Claude McKay
+
+They're auto-cropped to a circle and rendered in grayscale, so any portrait-ish
+photo works. **Use properly-licensed images:** Marcus Garvey and Claude McKay
+have well-known public-domain photographs (e.g. on Wikimedia Commons); Miss Lou
+(d. 2006) is more likely still under copyright, so source hers with care.
+
 ## Add the original podcast
 
 Drop the mp3 at `audio/wud-fi-tideh.mp3`. The "Hear the Original" player
