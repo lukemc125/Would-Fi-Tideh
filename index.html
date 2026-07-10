@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=10" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -62,7 +62,8 @@
         <div class="b-tile b-quiz">
           <h3><i class="ti ti-school" aria-hidden="true"></i> Test yu Patois</h3>
           <span class="b-sub"><i class="ti ti-flame" aria-hidden="true"></i> <span id="quiz-streak">0</span>-day streak &middot; <span id="quiz-rank">Newcomer</span> &middot; Best <span id="quiz-best">0</span></span>
-          <button id="quiz-start" class="btn" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> Start a round</button>
+          <span class="b-count" id="quiz-count"></span>
+          <button id="quiz-start" class="btn" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> Play today&rsquo;s set</button>
         </div>
         <div class="b-tile b-radio">
           <h3><i class="ti ti-radio" aria-hidden="true"></i> Wuds of Wisdom</h3>
@@ -155,25 +156,35 @@
         <article class="legend-feature">
           <span class="portrait portrait-lg" aria-hidden="true">LB</span>
           <div>
-            <h3>Louise Bennett-Coverley</h3>
-            <p class="legend-dates">"Miss Lou" · 1919–2006</p>
-            <p class="legend-text">She took the everyday speech of the Jamaican people — long dismissed as "broken English" — and proved it a language fit for poetry, satire and serious art. Through her verse, her Anancy folk tales and decades of performance, "Miss Lou" made Jamaican Patois a celebrated "nation language," and gave the writers who came after her permission to speak in their own voice.</p>
+            <p class="legend-kicker">Remembering Miss Lou</p>
+            <h3>The Hon. Louise Bennett-Coverley</h3>
+            <p class="legend-dates">&ldquo;Miss Lou&rdquo; &middot; Pioneering poet, folklorist &amp; educator</p>
+            <p class="legend-text">The Hon. Louise Bennett-Coverley, affectionately known as &ldquo;Miss Lou,&rdquo; was a pioneering Jamaican poet, folklorist, and educator. She is widely recognized as one of the first and most influential figures to legitimize Jamaican Patois (Patwa) as a respected literary craft and a language of profound cultural expression.</p>
+            <p class="legend-text">At a time when the dialect was often dismissed as &ldquo;broken English,&rdquo; Miss Lou celebrated its vivid imagery, humor, and rhythmic cadence. Through her poems, performances, and radio broadcasts, she elevated the voice of the ordinary Jamaican, ensuring that the rich oral traditions, wisdom, and &ldquo;wuds&rdquo; of the island were preserved and celebrated on the global stage. This platform is built in the spirit of her legacy.</p>
           </div>
         </article>
-        <div class="legend-cards">
-          <article class="legend-card">
-            <span class="portrait" aria-hidden="true">CM</span>
+        <article class="legend-feature">
+          <span class="portrait portrait-lg p-garvey" aria-hidden="true">MG</span>
+          <div>
+            <p class="legend-kicker">Honouring Marcus Garvey</p>
+            <h3>The Rt. Excellent Marcus Mosiah Garvey</h3>
+            <p class="legend-dates">Jamaica&rsquo;s first National Hero &middot; Visionary Pan-Africanist</p>
+            <p class="legend-text">The Rt. Excellent Marcus Mosiah Garvey, Jamaica&rsquo;s first National Hero, was a visionary Pan-Africanist and a towering figure in the global fight for Black pride, self-reliance, and cultural identity.</p>
+            <p class="legend-text">While Miss Lou celebrated the unique beauty of Jamaican Patois, Garvey recognized that true emancipation required a deep knowledge of one&rsquo;s history and the confident use of one&rsquo;s voice. He famously noted the profound power of language and speech when he said:</p>
+            <blockquote class="legend-quote">&ldquo;The pen is mightier than the sword, but the tongue is mightier than them both put together.&rdquo;</blockquote>
+            <p class="legend-text">This powerful reminder of the weight of our spoken words is the very essence of <em>Wud fi Tideh</em>. Preserving our proverbs is not just about remembering old sayings; it is about keeping the powerful tongue and roots of the Jamaican people alive for generations to come, ensuring we are never, as Garvey warned, &ldquo;like a tree without roots.&rdquo;</p>
+          </div>
+        </article>
+        <article class="legend-feature">
+          <span class="portrait portrait-lg p-mckay" aria-hidden="true">CM</span>
+          <div>
+            <p class="legend-kicker">Remembering Claude McKay</p>
             <h3>Claude McKay</h3>
-            <p class="legend-dates">1890–1948</p>
-            <p class="legend-text">Born in Clarendon, Jamaica, McKay published "Songs of Jamaica" and "Constab Ballads" in 1912 — the first books of poetry written in Jamaican Patois. He went on to become a central voice of the Harlem Renaissance ("If We Must Die," 1919; "Home to Harlem," 1928).</p>
-          </article>
-          <article class="legend-card">
-            <span class="portrait" aria-hidden="true">LB</span>
-            <h3>Louise Bennett</h3>
-            <p class="legend-dates">Poet · Folklorist</p>
-            <p class="legend-text">Poet, folklorist and performer whose "Jamaica Labrish" (1966) and Anancy stories carried the island's voice to the world. Honoured with the Jamaican Order of Merit in 2001.</p>
-          </article>
-        </div>
+            <p class="legend-dates">Poet of the Harlem Renaissance &middot; Pioneer of Patois verse</p>
+            <p class="legend-text">Born in the hills of Clarendon, Jamaica, Claude McKay carried the voice of the island to the world. In 1912 he published &ldquo;Songs of Jamaica&rdquo; and &ldquo;Constab Ballads,&rdquo; the first books of poetry ever written in Jamaican Patois, proving that the everyday tongue of his people belonged on the printed page and in the halls of literature.</p>
+            <p class="legend-text">He went on to become a central voice of the Harlem Renaissance, his defiant sonnet &ldquo;If We Must Die&rdquo; (1919) and his celebrated novel &ldquo;Home to Harlem&rdquo; (1928) giving proud, unflinching expression to the Black experience. Like Miss Lou and Marcus Garvey, McKay understood that a people&rsquo;s words are their power — and he wrote in his own, so that those who followed could do the same.</p>
+          </div>
+        </article>
       </div>
     </section>
   </main>
@@ -207,8 +218,8 @@
   <script src="js/sky.js?v=1"></script>
   <script src="js/bird.js?v=5"></script>
   <script src="js/studio.js?v=1"></script>
-  <script src="js/quiz.js?v=1"></script>
-  <script src="js/quiz-ui.js?v=1"></script>
+  <script src="js/quiz.js?v=2"></script>
+  <script src="js/quiz-ui.js?v=2"></script>
   <script src="js/app.js?v=6"></script>
 </body>
 </html>

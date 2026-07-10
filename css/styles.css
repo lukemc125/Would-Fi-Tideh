@@ -128,6 +128,11 @@ body {
 .legend-feature h3, .legend-card h3 { font-family: var(--font-serif); margin: 0 0 2px; color: var(--legends-ink); }
 .legend-dates { font-size: 12px; color: var(--gold-bright); margin: 0 0 8px; }
 .legend-text { font-size: 13.5px; color: var(--legends-muted); line-height: 1.6; margin: 0; }
+.legend-text + .legend-text { margin-top: 10px; }
+.legend-kicker { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--gold-bright); margin: 0 0 4px; }
+.legend-quote { font-family: var(--font-serif); font-style: italic; font-size: 16px; line-height: 1.5; color: var(--legends-ink); border-left: 3px solid var(--gold-bright); border-radius: 0; padding: 2px 0 2px 16px; margin: 12px 0; }
+.portrait.p-garvey { background: #A32D2D; color: #FBE3C4; }
+.portrait.p-mckay { background: var(--orange); color: #241407; }
 
 .site-footer { background: var(--footer-bg); color: var(--footer-ink); text-align: center; padding: 22px 18px; }
 .farewell { font-family: var(--font-serif); font-style: italic; font-size: 18px; margin: 0 0 6px; }
@@ -282,6 +287,8 @@ html.js .site-footer {
 .b-radio h3 { color: var(--studio-accent); }
 .b-radio .b-sub { color: #B8AF9C; }
 .b-radio .btn { margin-top: 4px; }
+.b-count { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-display); font-size: 11.5px; }
+.b-quiz .b-count { color: #FFE7D1; }
 .bento-row { display: flex; gap: 14px; margin-top: 14px; }
 .b-mini { flex: 1; border: none; border-radius: 14px; padding: 13px 17px; font-family: var(--font-display); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 9px; cursor: pointer; text-align: left; }
 .b-mini small { font-size: 11px; font-family: var(--font-body); font-weight: 400; opacity: 0.85; }
@@ -341,7 +348,9 @@ html.js .site-footer {
 .quiz-end { text-align: center; padding-top: 18px; }
 .quiz-score-big { font-family: var(--font-display); font-size: 54px; font-weight: 700; color: var(--gold); margin: 4px 0; }
 .quiz-verdict { font-family: var(--font-display); font-size: 19px; margin: 0 0 20px; }
-.quiz-end-stats { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 26px; }
+.quiz-end-stats { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 18px; }
+.quiz-next { display: inline-flex; align-items: center; gap: 6px; justify-content: center; font-family: var(--font-display); font-size: 13px; color: var(--muted); background: var(--surface); border-radius: 18px; padding: 8px 16px; margin: 0 auto 22px; }
+.quiz-next strong { color: var(--gold); font-variant-numeric: tabular-nums; }
 .quiz-end-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .confetti-bit { position: absolute; top: -20px; width: 9px; height: 14px; border-radius: 2px; pointer-events: none; z-index: 101; }
 

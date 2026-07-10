@@ -109,6 +109,29 @@
     });
   }
 
+  // ---- Daily set: seeded by the date so everyone gets the same 5-7 questions
+  // all day, and a replay (same date) reproduces them exactly for practice. ----
+  function seededRng(str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+    h = Math.imul(h ^ (h >>> 15), 2654435761) >>> 0;
+    var seed = (h ^ (h >>> 13)) >>> 0;
+    return function () {
+      seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function dailyCount(dateStr) {
+    return 5 + Math.floor(seededRng(dateStr + '#n')() * 3); // 5, 6 or 7
+  }
+
+  function dailyRound(data, dateStr) {
+    return buildRound(data, seededRng(dateStr + '#quiz'), dailyCount(dateStr));
+  }
+
   // ---- Scoring: +10 per correct, combo bonus 2*(combo-1) capped at +10;
   // a miss resets the combo and costs a heart. ----
   function newScore() {
@@ -160,7 +183,8 @@
     distractorsFor: distractorsFor, makeFillBlank: makeFillBlank,
     makeEarTest: makeEarTest, makeBuildPhrase: makeBuildPhrase,
     makeMatchMeaning: makeMatchMeaning, buildEligible: buildEligible,
-    buildRound: buildRound, newScore: newScore, applyAnswer: applyAnswer,
+    buildRound: buildRound, seededRng: seededRng, dailyCount: dailyCount,
+    dailyRound: dailyRound, newScore: newScore, applyAnswer: applyAnswer,
     rankFor: rankFor, verdictFor: verdictFor, RANKS: RANKS
   };
 });

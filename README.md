@@ -12,10 +12,14 @@ Donald Thompson's "Wud fi Tideh" podcast.
 - **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
   di blank, build di phrase from word chips, ear tests on the authentic audio,
   and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
-  a daily streak, synthesized sound effects and confetti. Progress lives in
-  localStorage; no accounts.
-- **Legends** — a tribute to Louise Bennett-Coverley ("Miss Lou") and Claude
-  McKay, who made Patois a literary language.
+  a daily streak, synthesized sound effects and confetti. Each day serves one
+  seeded set of 5–7 questions (the same for everyone, fixed until midnight);
+  you can replay it to practise, and a live countdown shows when the next set
+  unlocks. Progress lives in localStorage; no accounts.
+- **Legends** — tributes, in memorial style, to The Hon. Louise Bennett-Coverley
+  ("Miss Lou"), The Rt. Excellent Marcus Mosiah Garvey (with his "the tongue is
+  mightier" reflection), and Claude McKay — the voices who made Patois, and the
+  spoken word, a source of power.
 - Day/night theme: **Sunsplash** by day, **Reggae Dusk** by night — with a
   living sky in the hero (the sun tracks the visitor's clock; moon and stars
   after dark).

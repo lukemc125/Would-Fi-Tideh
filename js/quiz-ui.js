@@ -10,7 +10,6 @@
   var Q = window.Quiz;
   var DATA = window.WUD_DATA || [];
   var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var N_QUESTIONS = 8;
 
   var PRAISE = ['Nice! Big up yuself!', 'Yes iyah — correct!', 'Sweet! Yu know yu wuds!', 'Bullseye! Gwaan so!', 'Dat right! Walk good!'];
 
@@ -58,21 +57,59 @@
     else if (kind === 'fanfare') { tone(523, 0, 0.12); tone(659, 0.11, 0.12); tone(784, 0.22, 0.12); tone(1046, 0.33, 0.3); }
   }
 
+  // ---- Countdown to the next daily set (local midnight) ----
+  var countdownTimer = null;
+  function msToMidnight() {
+    var now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0) - now;
+  }
+  function fmtHMS(ms) {
+    if (ms < 0) ms = 0;
+    var s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return p(h) + ':' + p(m) + ':' + p(ss);
+  }
+  function fmtShort(ms) {
+    if (ms < 0) ms = 0;
+    var m = Math.floor(ms / 60000);
+    return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : (m % 60) + 'm';
+  }
+  function stopCountdown() { if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; } }
+  function startEndCountdown() {
+    var el = document.getElementById('quiz-next');
+    if (!el) return;
+    stopCountdown();
+    function tick() {
+      var ms = msToMidnight();
+      if (ms <= 0) {
+        el.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i> A fresh set ready — press Practice fi di new questions!';
+        stopCountdown();
+        return;
+      }
+      el.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New set in <strong>' + fmtHMS(ms) + '</strong> — come back tomorrow fi a fresh set';
+    }
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
   // ---- Entry-card stats ----
   function refreshCard() {
     var r = document.getElementById('quiz-rank');
     var s = document.getElementById('quiz-streak');
     var b = document.getElementById('quiz-best');
+    var c = document.getElementById('quiz-count');
     if (r) r.textContent = Q.rankFor(store.best);
     if (s) s.textContent = store.streak;
     if (b) b.textContent = store.best;
+    if (c) c.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New set in ' + fmtShort(msToMidnight());
   }
 
   // ---- Overlay open/close ----
   function open() {
+    stopCountdown();
     lastFocus = document.activeElement;
     st = {
-      qs: Q.buildRound(DATA, Math.random, N_QUESTIONS),
+      qs: Q.dailyRound(DATA, today()),
       i: 0, s: Q.newScore(), results: [],
       answered: false, selection: null, line: [], ear: null, over: false
     };
@@ -88,6 +125,7 @@
 
   function close() {
     stopEar();
+    stopCountdown();
     els.overlay.hidden = true;
     document.body.style.overflow = '';
     document.removeEventListener('keydown', onKey);
@@ -330,14 +368,16 @@
       '<span class="quiz-stat"><i class="ti ti-medal" aria-hidden="true"></i> ' + Q.rankFor(store.best) + '</span>' +
       '<span class="quiz-stat"><i class="ti ti-calendar" aria-hidden="true"></i> ' + store.streak + '-day streak</span>' +
       '</div>' +
+      '<p class="quiz-next" id="quiz-next"></p>' +
       '<div class="quiz-end-actions">' +
-      '<button id="quiz-again" class="btn btn-orange" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Gwaan again</button>' +
+      '<button id="quiz-again" class="btn btn-orange" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Practice again</button>' +
       '<button id="quiz-done" class="btn btn-ghost" type="button">Done</button>' +
       '</div></div>';
     els.check.hidden = true;
     st.over = true;
     document.getElementById('quiz-again').addEventListener('click', function () { els.check.hidden = false; open(); });
     document.getElementById('quiz-done').addEventListener('click', close);
+    startEndCountdown();
     sfx('fanfare');
     if (!REDUCE && accuracy >= 0.5) confetti();
     document.getElementById('quiz-again').focus();
@@ -386,5 +426,6 @@
     els.stage.addEventListener('click', onStageClick);
     mute.addEventListener('click', function () { store.muted = !store.muted; save(); renderMute(); });
     refreshCard();
+    window.setInterval(refreshCard, 30000);
   });
 })();
