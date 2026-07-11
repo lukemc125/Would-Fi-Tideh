@@ -96,6 +96,19 @@ body {
 .wow-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .wow-head h2 { font-family: var(--font-display); font-size: 22px; margin: 0; color: var(--studio-accent); }
 .wow-head p { margin: 2px 0 0; font-size: 13px; color: #B8AF9C; }
+.wow-channels { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chan { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-display); font-size: 13px; color: var(--studio-ink); background: var(--studio-panel); border: 1.5px solid #3A3528; border-radius: 999px; padding: 7px 13px; cursor: pointer; line-height: 1; }
+.chan:hover { border-color: var(--studio-accent); }
+.chan.is-active { background: var(--studio-accent); color: #1A1A1A; border-color: var(--studio-accent); }
+.chan:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.chan-tag { font-family: var(--font-body); font-size: 10.5px; letter-spacing: .02em; text-transform: uppercase; opacity: .6; }
+.chan.is-active .chan-tag { opacity: .72; }
+.ep-card { background: var(--studio-panel); border: 1px solid #3A3528; border-radius: 12px; padding: 16px 18px; }
+.ep-badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-display); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #FF5A4E; }
+.ep-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF5A4E; box-shadow: 0 0 10px rgba(255, 90, 78, 0.8); }
+.ep-theme { font-family: var(--font-display); font-size: 24px; color: var(--studio-accent); margin: 6px 0 8px; }
+.ep-desc { font-size: 14px; line-height: 1.55; color: var(--studio-ink); margin: 0 0 8px; }
+.ep-note { font-size: 12.5px; line-height: 1.5; color: #B8AF9C; margin: 0; }
 .wow-controls { display: flex; align-items: center; gap: 14px; background: var(--studio-panel); border-radius: var(--radius-sm); padding: 14px 16px; }
 .round-btn { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; background: var(--green); color: #fff; font-size: 22px; display: inline-flex; align-items: center; justify-content: center; }
 .wow-progress { flex: 1; height: 6px; background: #444; border-radius: 3px; overflow: hidden; }

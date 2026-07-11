@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=12" />
+  <link rel="stylesheet" href="css/styles.css?v=13" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -82,9 +82,17 @@
         <div class="wow-head">
           <div>
             <h2>Wuds of Wisdom</h2>
-            <p>Di day&rsquo;s five proverbs, one likkle radio session — fresh every day</p>
+            <p id="wow-sub">Di day&rsquo;s five proverbs, one likkle radio session — fresh every day</p>
           </div>
           <button id="wow-mix" class="btn btn-orange" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Mix up anodda five</button>
+        </div>
+        <div class="wow-channels" id="wow-channels" role="group" aria-label="Choose a channel">
+          <button class="chan is-active" data-chan="session" type="button"><i class="ti ti-cards" aria-hidden="true"></i> Di Daily Five <span class="chan-tag">yaad hosts</span></button>
+          <button class="chan" data-chan="accountability" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Accountability <span class="chan-tag">real &middot; 5:36</span></button>
+          <button class="chan" data-chan="clarity" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Clarity <span class="chan-tag">real &middot; 5:26</span></button>
+          <button class="chan" data-chan="faith" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Faith <span class="chan-tag">real &middot; 5:11</span></button>
+          <button class="chan" data-chan="family" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Family <span class="chan-tag">real &middot; 5:06</span></button>
+          <button class="chan" data-chan="work" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Work <span class="chan-tag">real &middot; 3:36</span></button>
         </div>
         <div class="studio-scene" id="studio-scene">
           <div class="host" id="host-a">
@@ -218,9 +226,9 @@
   <script src="js/ui.js?v=2"></script>
   <script src="js/sky.js?v=1"></script>
   <script src="js/bird.js?v=5"></script>
-  <script src="js/studio.js?v=1"></script>
+  <script src="js/studio.js?v=2"></script>
   <script src="js/quiz.js?v=2"></script>
   <script src="js/quiz-ui.js?v=3"></script>
-  <script src="js/app.js?v=8"></script>
+  <script src="js/app.js?v=9"></script>
 </body>
 </html>

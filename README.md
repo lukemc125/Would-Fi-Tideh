@@ -5,11 +5,14 @@ Donald Thompson's "Wud fi Tideh" podcast.
 
 - **The Daily Wud** — today's proverb with its English translation and meaning,
   plus up to two shuffles: 3 wuds per day, then come back tomorrow.
-- **Wuds of Wisdom** — the day's five proverbs (randomly chosen but fixed for
-  the day, fresh tomorrow) as a two-host radio segment with a live transcript,
-  plus a "Mix up anodda five" button for a different random session on demand.
-  Proverb lines prefer Donald's real recordings (see "Real recordings" below),
-  then the generated clips, then the browser voice.
+- **Wuds of Wisdom** — a studio with switchable **channels**. *Di Daily Five* is
+  the day's five proverbs (randomly chosen but fixed for the day, fresh tomorrow)
+  as a two-host radio segment with a live transcript, plus a "Mix up anodda five"
+  button for a different random session on demand; its proverb lines prefer
+  Donald's real recordings (see "Real recordings" below), then the generated
+  clips, then the browser voice. The other channels are Donald's **real podcast
+  episodes** — one per theme (Accountability, Clarity, Faith, Family, Work) —
+  played whole through the same studio (see "Real episodes" below).
 - **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
   di blank, build di phrase from word chips, ear tests on the authentic audio,
   and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
@@ -52,6 +55,25 @@ real recording first, falling back to the generated clip (and then the browser
 voice) if the file is missing or the browser can't decode it. The quiz's ear
 tests deliberately stay on the generated clips so the blanked word is always a
 clean, single phrase.
+
+## Real episodes
+
+The studio's non-generated channels play Donald's actual, longer podcast
+episodes — his two-host NotebookLM sessions, one per theme. They live in
+`audio/episodes/` as `<theme>.mp3` (mono, ~96 kbps — the sources are mono-summed,
+so nothing is lost):
+
+- `accountability.mp3`, `clarity.mp3`, `faith.mp3`, `family.mp3`, `work.mp3`
+
+Each rides the same studio pipeline as a one-clip session, so the ON AIR sign,
+VU meter, and host avatars all react to the real audio. Because the recordings
+are a single mono mix (no per-speaker channel, and no local transcript), the two
+on-screen hosts can't be truly diarised — instead their turn-taking is **derived
+from the audio itself**: when the level drops into a gap and picks back up, the
+mic hands to the other host (`Studio.autoTurns`, tuned by `TURN_*` in
+[`js/studio.js`](js/studio.js)). To swap an episode, drop a replacement `.mp3`
+with the same name; to add a theme, add a file plus an entry in `EPISODES`
+([`js/app.js`](js/app.js)) and a `.chan` button in [`index.html`](index.html).
 
 ## Legend portraits (black-and-white photos)
 

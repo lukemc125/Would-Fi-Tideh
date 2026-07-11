@@ -16,6 +16,7 @@
   var player = null;
   var ctx = null, analyser = null, freq = null, sourceWired = false;
   var rafId = null, playing = false, speaker = null, tPseudo = 0;
+  var autoTurn = false, silenceMs = 0, holdMs = 0;
   var els = {};
 
   function $(id) { return document.getElementById(id); }
@@ -95,10 +96,35 @@
     g.globalAlpha = 1;
   }
 
+  // Episode mode: with a single long recording (two hosts, mono, no transcript)
+  // we can't truly diarise who's talking — so we derive turns from the audio
+  // itself. When the level drops into a gap and then picks back up, hand the mic
+  // to the other host. A minimum hold time stops it flapping mid-sentence.
+  var TURN_QUIET = 0.09, TURN_GAP_MS = 240, TURN_HOLD_MS = 850, FRAME_MS = 16;
+  function detectTurn(lv) {
+    holdMs += FRAME_MS;
+    if (lv < TURN_QUIET) { silenceMs += FRAME_MS; return; }
+    if (silenceMs >= TURN_GAP_MS && holdMs >= TURN_HOLD_MS) {
+      setSpeaker(speaker === 'a' ? 'b' : 'a');
+      holdMs = 0;
+    }
+    silenceMs = 0;
+  }
+
+  // Toggle the audio-driven turn-taking. On: seed the first speaker and let the
+  // loop hand off; off: speakers are driven per-line by the caller instead.
+  function autoTurns(on) {
+    autoTurn = !!on;
+    silenceMs = 0; holdMs = 0;
+    if (on) setSpeaker('a');
+  }
+
   function loop() {
     if (!playing) return;
-    var lv = player && player.paused ? 0.05 : level();
-    if (!REDUCE && speaker) setMouth(speaker, player && player.paused ? 0.1 : lv);
+    var paused = player && player.paused;
+    var lv = paused ? 0.05 : level();
+    if (autoTurn && !paused) detectTurn(lv);
+    if (!REDUCE && speaker) setMouth(speaker, paused ? 0.1 : lv);
     drawMeter(lv);
     rafId = window.requestAnimationFrame(loop);
   }
@@ -225,6 +251,7 @@
   function onStop() {
     if (!els.scene) return;
     playing = false;
+    autoTurn = false;
     speaker = null;
     if (rafId) { window.cancelAnimationFrame(rafId); rafId = null; }
     if (els.hostA) els.hostA.classList.remove('speaking');
@@ -234,5 +261,5 @@
     idleMeter();
   }
 
-  return { init: init, onPlay: onPlay, onPause: onPause, onStop: onStop, onEnd: onStop, setSpeaker: setSpeaker };
+  return { init: init, onPlay: onPlay, onPause: onPause, onStop: onStop, onEnd: onStop, setSpeaker: setSpeaker, autoTurns: autoTurns };
 });

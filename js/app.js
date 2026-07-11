@@ -148,6 +148,20 @@
     tryNext();
   }
 
+  // Donald's real, longer podcast episodes (his NotebookLM two-host sessions),
+  // one per theme. Unlike the per-proverb clips these don't map to a single
+  // proverb — they play whole, through the same studio, as an alternate
+  // "channel" to the generated Daily Five.
+  var EPISODES = [
+    { slug: 'accountability', title: 'Accountability', src: 'audio/episodes/accountability.mp3', dur: 336 },
+    { slug: 'clarity',        title: 'Clarity',        src: 'audio/episodes/clarity.mp3',        dur: 326 },
+    { slug: 'faith',          title: 'Faith',          src: 'audio/episodes/faith.mp3',          dur: 311 },
+    { slug: 'family',         title: 'Family',         src: 'audio/episodes/family.mp3',         dur: 306 },
+    { slug: 'work',           title: 'Work',           src: 'audio/episodes/work.mp3',           dur: 216 }
+  ];
+  function epBySlug(s) { for (var i = 0; i < EPISODES.length; i++) if (EPISODES[i].slug === s) return EPISODES[i]; return null; }
+  function fmtDur(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+
   function initWow() {
     if (!data.length || !window.Radio) return;
     var player = new window.Radio.RadioPlayer();
@@ -160,8 +174,14 @@
     var playBtn = document.getElementById('wow-play');
     var pauseBtn = document.getElementById('wow-pause');
     var stopBtn = document.getElementById('wow-stop');
+    var subEl = document.getElementById('wow-sub');
+    var channelsEl = document.getElementById('wow-channels');
+    var mixBtn = document.getElementById('wow-mix');
     var script = [];
     var paused = false;
+    var mode = 'session';   // 'session' (generated daily five) | 'episode' (real)
+    var currentEp = null;
+    var epProg = null;      // timeupdate handler while an episode plays
 
     function renderTranscript() {
       transcriptEl.innerHTML = '';
@@ -205,6 +225,10 @@
     function newSession(random) {
       player.stop();
       paused = false;
+      mode = 'session';
+      currentEp = null;
+      if (S) S.autoTurns(false);
+      if (mixBtn) mixBtn.hidden = false;
       // Default: today's five, seeded by the date, so the session is fixed for
       // the day (same picks and banter for everyone) and fresh tomorrow. The
       // "Mix up anodda five" button passes random=true for a fresh set on
@@ -228,6 +252,106 @@
         ? 'Anodda five mix up — press play fi hear Auntie Pearl an Uncle Roy.'
         : 'Di day’s five ready — press play fi hear Auntie Pearl an Uncle Roy.';
       showPlaying(false);
+      updateChannelUI();
+    }
+
+    // Load a real episode: a one-line "script" whose clip is the whole mp3, so it
+    // rides the same studio pipeline. Tune in right away; the studio's audio-
+    // driven turn-taking makes the two hosts trade off through it.
+    function selectEpisode(ep) {
+      player.stop();
+      paused = false;
+      mode = 'episode';
+      currentEp = ep;
+      script = [{ kind: 'episode', voice: 'a', speaker: 'Auntie Pearl', text: ep.title, audioSrc: ep.src }];
+      if (mixBtn) mixBtn.hidden = true;
+      if (subEl) subEl.textContent = 'Donald’s real episode — two voices reasoning pon ' + ep.title.toLowerCase();
+      renderEpisodeCard(ep);
+      setProgress(0); barEl.style.width = '0%';
+      updateChannelUI();
+      if (S) S.onStop();
+      if (B) B.release();
+      beginPlay();
+    }
+
+    // Back to the generated Daily Five channel (loaded, not auto-played).
+    function selectSession() {
+      player.stop();
+      paused = false;
+      if (S) { S.autoTurns(false); S.onStop(); }
+      if (B) B.release();
+      unbindEpisodeProgress();
+      if (subEl) subEl.textContent = 'Di day’s five proverbs, one likkle radio session — fresh every day';
+      newSession(false);
+    }
+
+    function renderEpisodeCard(ep) {
+      transcriptEl.innerHTML = '';
+      var card = document.createElement('div');
+      card.className = 'ep-card';
+      card.innerHTML =
+        '<div class="ep-badge"><span class="ep-live-dot"></span> Real recording &middot; ' + fmtDur(ep.dur) + '</div>' +
+        '<div class="ep-theme">' + escapeHtml(ep.title) + '</div>' +
+        '<p class="ep-desc">Donald Thompson an him co-host reason pon di ol’-time wisdom fi <strong>' + escapeHtml(ep.title.toLowerCase()) + '</strong> — di actual podcast episode, not a generated one.</p>' +
+        '<p class="ep-note">Up top, di two hosts trade di mic as di talkin’ switch, mouthin’ along to di real audio. No written transcript yet.</p>';
+      transcriptEl.appendChild(card);
+      transcriptEl.scrollTop = 0;
+    }
+
+    function updateChannelUI() {
+      if (!channelsEl) return;
+      var active = (mode === 'episode' && currentEp) ? currentEp.slug : 'session';
+      var chans = channelsEl.querySelectorAll('.chan');
+      for (var i = 0; i < chans.length; i++) {
+        chans[i].classList.toggle('is-active', chans[i].getAttribute('data-chan') === active);
+      }
+    }
+
+    // Drive the progress bar from real playback time while an episode plays.
+    function bindEpisodeProgress() {
+      unbindEpisodeProgress();
+      var a = player.audio;
+      if (!a) return;
+      epProg = function () { if (a.duration) barEl.style.width = Math.round((a.currentTime / a.duration) * 100) + '%'; };
+      a.addEventListener('timeupdate', epProg);
+    }
+    function unbindEpisodeProgress() {
+      if (epProg && player.audio) player.audio.removeEventListener('timeupdate', epProg);
+      epProg = null;
+    }
+
+    function sessionCallbacks() {
+      return {
+        onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); if (B) B.perchOnHost(line.voice); },
+        onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); if (B) B.release(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+        onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
+      };
+    }
+
+    function episodeCallbacks() {
+      return {
+        onLineStart: function () { if (B) B.perchOnHost('a'); },
+        onEnd: function () { paused = false; showPlaying(false); if (S) { S.autoTurns(false); S.onEnd(); } if (B) B.release(); unbindEpisodeProgress(); barEl.style.width = '100%'; statusEl.textContent = 'Dat episode done — pick anodda channel, or back to Di Daily Five.'; },
+        onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan play dis audio.'; }
+      };
+    }
+
+    // Play whatever's currently loaded, with mode-appropriate callbacks.
+    function beginPlay() {
+      player.loadVoices(function () {
+        if (mode === 'episode' && currentEp) {
+          if (S) S.autoTurns(true);
+          player.play(script, episodeCallbacks());
+          bindEpisodeProgress();
+          statusEl.textContent = 'On air — Donald’s real session on ' + currentEp.title + '…';
+        } else {
+          if (S) S.autoTurns(false);
+          player.play(script, sessionCallbacks());
+          statusEl.textContent = 'On air…';
+        }
+        showPlaying(true);
+        if (S) S.onPlay();
+      });
     }
 
     function showPlaying(on) {
@@ -249,20 +373,14 @@
         player.resume();
         showPlaying(true);
         if (S) S.onPlay();
-        statusEl.textContent = 'On air…';
+        statusEl.textContent = (mode === 'episode' && currentEp) ? 'On air — ' + currentEp.title + '…' : 'On air…';
         return;
       }
-      if (!script.length) newSession();
-      player.loadVoices(function () {
-        player.play(script, {
-          onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); if (B) B.perchOnHost(line.voice); },
-          onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); if (B) B.release(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
-          onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
-        });
-        showPlaying(true);
-        if (S) S.onPlay();
-        statusEl.textContent = 'On air…';
-      });
+      if (!script.length) {
+        if (mode === 'episode' && currentEp) script = [{ kind: 'episode', voice: 'a', speaker: 'Auntie Pearl', text: currentEp.title, audioSrc: currentEp.src }];
+        else newSession(false);
+      }
+      beginPlay();
     });
     pauseBtn.addEventListener('click', function () {
       player.pause();
@@ -271,10 +389,25 @@
       if (S) S.onPause();
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
-    stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); if (B) B.release(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+    stopBtn.addEventListener('click', function () {
+      player.stop(); paused = false; showPlaying(false);
+      if (S) { S.autoTurns(false); S.onStop(); }
+      if (B) B.release();
+      unbindEpisodeProgress();
+      if (mode !== 'episode') highlight(-1);
+      setProgress(0); barEl.style.width = '0%';
+      statusEl.textContent = 'Stopped.';
+    });
 
-    var mixBtn = document.getElementById('wow-mix');
-    if (mixBtn) mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); if (B) B.release(); newSession(true); });
+    if (mixBtn) mixBtn.addEventListener('click', function () { paused = false; if (S) { S.autoTurns(false); S.onStop(); } if (B) B.release(); newSession(true); });
+
+    if (channelsEl) channelsEl.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.chan') : null;
+      if (!btn) return;
+      var chan = btn.getAttribute('data-chan');
+      if (chan === 'session') { if (mode !== 'session') selectSession(); }
+      else { var ep = epBySlug(chan); if (ep) selectEpisode(ep); }
+    });
 
     newSession();
   }
