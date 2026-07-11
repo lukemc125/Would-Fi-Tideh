@@ -202,13 +202,15 @@
       }
     }
 
-    function newSession() {
+    function newSession(random) {
       player.stop();
       paused = false;
-      // Today's five: seeded by the date, so the session is fixed for the day
-      // (same picks and same banter for every visit) and fresh tomorrow.
-      var rng = window.Proverbs.seededRng(todayStr());
-      var picks = window.Proverbs.dailyPicks(data, todayStr(), 5);
+      // Default: today's five, seeded by the date, so the session is fixed for
+      // the day (same picks and banter for everyone) and fresh tomorrow. The
+      // "Mix up anodda five" button passes random=true for a fresh set on
+      // demand, with varied banter each time.
+      var rng = random ? Math.random : window.Proverbs.seededRng(todayStr());
+      var picks = random ? window.Proverbs.pickN(data, 5) : window.Proverbs.dailyPicks(data, todayStr(), 5);
       script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS, rng);
       // Every line gets audio: patois lines prefer the real recording (falling
       // back to the generated clip), other lines use their clip; TTS fills gaps.
@@ -222,7 +224,9 @@
         }
       });
       renderTranscript();
-      statusEl.textContent = 'Di day’s five ready — press play fi hear Auntie Pearl an Uncle Roy.';
+      statusEl.textContent = random
+        ? 'Anodda five mix up — press play fi hear Auntie Pearl an Uncle Roy.'
+        : 'Di day’s five ready — press play fi hear Auntie Pearl an Uncle Roy.';
       showPlaying(false);
     }
 
@@ -268,6 +272,9 @@
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
     stopBtn.addEventListener('click', function () { player.stop(); paused = false; showPlaying(false); if (S) S.onStop(); if (B) B.release(); highlight(-1); setProgress(0); statusEl.textContent = 'Stopped.'; });
+
+    var mixBtn = document.getElementById('wow-mix');
+    if (mixBtn) mixBtn.addEventListener('click', function () { paused = false; if (S) S.onStop(); if (B) B.release(); newSession(true); });
 
     newSession();
   }

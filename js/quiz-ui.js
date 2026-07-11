@@ -82,11 +82,11 @@
     function tick() {
       var ms = msToMidnight();
       if (ms <= 0) {
-        el.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i> A fresh set ready — press Practice fi di new questions!';
+        el.innerHTML = '<i class="ti ti-sparkles" aria-hidden="true"></i> A fresh game ready — press Practice fi di new questions!';
         stopCountdown();
         return;
       }
-      el.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New set in <strong>' + fmtHMS(ms) + '</strong> — come back tomorrow fi a fresh set';
+      el.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New game in <strong>' + fmtHMS(ms) + '</strong> — come back tomorrow fi a fresh game';
     }
     tick();
     countdownTimer = setInterval(tick, 1000);
@@ -101,7 +101,7 @@
     if (r) r.textContent = Q.rankFor(store.best);
     if (s) s.textContent = store.streak;
     if (b) b.textContent = store.best;
-    if (c) c.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New set in ' + fmtShort(msToMidnight());
+    if (c) c.innerHTML = '<i class="ti ti-clock" aria-hidden="true"></i> New game in ' + fmtShort(msToMidnight());
   }
 
   // ---- Overlay open/close ----
