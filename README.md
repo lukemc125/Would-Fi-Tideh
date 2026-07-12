@@ -10,9 +10,9 @@ Donald Thompson's "Wud fi Tideh" podcast.
   as a two-host radio segment with a live transcript, plus a "Mix up anodda five"
   button for a different random session on demand; its proverb lines prefer
   Donald's real recordings (see "Real recordings" below), then the generated
-  clips, then the browser voice. The other channels are Donald's **real podcast
-  episodes** — one per theme (Accountability, Clarity, Faith, Family, Work) —
-  played whole through the same studio (see "Real episodes" below).
+  clips, then the browser voice. Alongside it, the studio unlocks **one real
+  podcast episode per Jamaica calendar day** — the same episode for everyone,
+  with tomorrow's episode available only through a small preview control.
 - **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
   di blank, build di phrase from word chips, ear tests on the authentic audio,
   and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
@@ -58,14 +58,17 @@ clean, single phrase.
 
 ## Real episodes
 
-The studio's non-generated channels play Donald's actual, longer podcast
-episodes — his two-host NotebookLM sessions, one per theme. They live in
+The studio unlocks one of Donald's actual, longer podcast episodes each day —
+his two-host NotebookLM sessions, one per theme. They live in
 `audio/episodes/` as `<theme>.mp3` (mono, ~96 kbps — the sources are mono-summed,
 so nothing is lost):
 
 - `accountability.mp3`, `clarity.mp3`, `faith.mp3`, `family.mp3`, `work.mp3`
 
-Each rides the same studio pipeline as a one-clip session, so the ON AIR sign,
+Everyone receives the same daily episode in a five-day rotation; tomorrow is
+always the next theme. The visible **Preview tomorrow** control is for testing
+the next unlock without waiting until midnight. Each episode rides the same
+studio pipeline as a one-clip session, so the ON AIR sign,
 VU meter, and host avatars all react to the real audio. Because the recordings
 are a single mono mix (no per-speaker channel, and no local transcript), the two
 on-screen hosts can't be truly diarised — instead their turn-taking is **derived
@@ -73,7 +76,7 @@ from the audio itself**: when the level drops into a gap and picks back up, the
 mic hands to the other host (`Studio.autoTurns`, tuned by `TURN_*` in
 [`js/studio.js`](js/studio.js)). To swap an episode, drop a replacement `.mp3`
 with the same name; to add a theme, add a file plus an entry in `EPISODES`
-([`js/app.js`](js/app.js)) and a `.chan` button in [`index.html`](index.html).
+([`js/app.js`](js/app.js)).
 
 ## Legend portraits (black-and-white photos)
 

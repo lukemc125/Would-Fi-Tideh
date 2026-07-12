@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=13" />
+  <link rel="stylesheet" href="css/styles.css?v=14" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -88,11 +88,8 @@
         </div>
         <div class="wow-channels" id="wow-channels" role="group" aria-label="Choose a channel">
           <button class="chan is-active" data-chan="session" type="button"><i class="ti ti-cards" aria-hidden="true"></i> Di Daily Five <span class="chan-tag">yaad hosts</span></button>
-          <button class="chan" data-chan="accountability" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Accountability <span class="chan-tag">real &middot; 5:36</span></button>
-          <button class="chan" data-chan="clarity" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Clarity <span class="chan-tag">real &middot; 5:26</span></button>
-          <button class="chan" data-chan="faith" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Faith <span class="chan-tag">real &middot; 5:11</span></button>
-          <button class="chan" data-chan="family" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Family <span class="chan-tag">real &middot; 5:06</span></button>
-          <button class="chan" data-chan="work" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> Work <span class="chan-tag">real &middot; 3:36</span></button>
+          <button class="chan chan-real" id="wow-daily-episode" data-chan="episode" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> <span id="wow-daily-episode-title">Today&rsquo;s real episode</span> <span class="chan-tag" id="wow-daily-episode-meta">real recording</span></button>
+          <button class="chan-preview" id="wow-preview-next" type="button"><i class="ti ti-flask" aria-hidden="true"></i> Preview tomorrow</button>
         </div>
         <div class="studio-scene" id="studio-scene">
           <div class="host" id="host-a">
@@ -220,7 +217,7 @@
 
   <!-- Bump ?v= on each asset whenever you change it, so browsers fetch fresh. -->
   <script src="js/data.js?v=3"></script>
-  <script src="js/proverbs.js?v=3"></script>
+  <script src="js/proverbs.js?v=4"></script>
   <script src="js/theme.js?v=2"></script>
   <script src="js/audio.js?v=3"></script>
   <script src="js/ui.js?v=2"></script>
@@ -229,6 +226,6 @@
   <script src="js/studio.js?v=2"></script>
   <script src="js/quiz.js?v=2"></script>
   <script src="js/quiz-ui.js?v=3"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

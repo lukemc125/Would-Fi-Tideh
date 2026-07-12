@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { seededRng, dailyPicks, generateScript, DEFAULT_HOSTS } = require('../js/proverbs.js');
+const { seededRng, dailyPicks, dailyPick, dailyCyclePick, generateScript, DEFAULT_HOSTS } = require('../js/proverbs.js');
 const { WUD_DATA } = require('../js/data.js');
 
 test('seededRng is deterministic per seed string', () => {
@@ -26,6 +26,26 @@ test('dailyPicks vary across days', () => {
   const days = ['2026-07-07', '2026-07-08', '2026-07-09', '2026-07-10'];
   const keys = days.map(d => dailyPicks(WUD_DATA, d, 5).map(p => p.slug).join('|'));
   assert.ok(new Set(keys).size >= 3, 'selections differ across days');
+});
+
+test('dailyPick selects one deterministic item and wraps safely across days', () => {
+  const episodes = ['accountability', 'clarity', 'faith', 'family', 'work'];
+  assert.equal(dailyPick(episodes, '2026-07-12'), dailyPick(episodes, '2026-07-12'));
+  assert.ok(episodes.includes(dailyPick(episodes, '2026-07-12')));
+  assert.equal(dailyPick([], '2026-07-12'), null);
+
+  const picked = new Set();
+  for (let day = 1; day <= 31; day++) picked.add(dailyPick(episodes, '2026-08-' + String(day).padStart(2, '0')));
+  assert.equal(picked.size, episodes.length, 'all episode themes become the daily episode over a month');
+});
+
+test('dailyCyclePick rotates exactly one item per calendar day and wraps', () => {
+  const episodes = ['accountability', 'clarity', 'faith', 'family', 'work'];
+  const a = dailyCyclePick(episodes, '2026-07-12');
+  const b = dailyCyclePick(episodes, '2026-07-13');
+  assert.equal(b, episodes[(episodes.indexOf(a) + 1) % episodes.length]);
+  assert.equal(dailyCyclePick(episodes, '2026-07-17'), a, 'five days later wraps to the same episode');
+  assert.equal(dailyCyclePick([], '2026-07-12'), null);
 });
 
 test('a fully seeded session script is identical for the same date', () => {

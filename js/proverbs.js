@@ -46,6 +46,22 @@
     return pickN(items, n, seededRng(dateStr));
   }
 
+  // The one daily item for a collection such as the real podcast episodes.
+  function dailyPick(items, dateStr) {
+    if (!items || !items.length) return null;
+    return items[dailyIndex(dateStr, items.length)];
+  }
+
+  // A predictable daily rotation: adjacent calendar days always advance by one.
+  // Useful when people should share the same daily item and "tomorrow" needs to
+  // be an actual next item, not another random hash result.
+  function dailyCyclePick(items, dateStr) {
+    if (!items || !items.length) return null;
+    var parts = String(dateStr).split('-');
+    var day = Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])) / 86400000;
+    return items[((day % items.length) + items.length) % items.length];
+  }
+
   function pickN(items, n, rng) {
     rng = rng || Math.random;
     var pool = items.slice();
@@ -140,6 +156,8 @@
     dailyIndex: dailyIndex,
     seededRng: seededRng,
     dailyPicks: dailyPicks,
+    dailyPick: dailyPick,
+    dailyCyclePick: dailyCyclePick,
     pickN: pickN,
     randomIndexExcluding: randomIndexExcluding,
     generateScript: generateScript,

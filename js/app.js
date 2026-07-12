@@ -159,8 +159,20 @@
     { slug: 'family',         title: 'Family',         src: 'audio/episodes/family.mp3',         dur: 306 },
     { slug: 'work',           title: 'Work',           src: 'audio/episodes/work.mp3',           dur: 216 }
   ];
-  function epBySlug(s) { for (var i = 0; i < EPISODES.length; i++) if (EPISODES[i].slug === s) return EPISODES[i]; return null; }
   function fmtDur(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+
+  // Real episodes use Jamaica's calendar so everyone sees the same theme each day.
+  function jamaicaDateStr(offset) {
+    var d = new Date(Date.now() + (offset || 0) * 86400000);
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Jamaica', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(d);
+      var out = {};
+      for (var i = 0; i < parts.length; i++) if (parts[i].type !== 'literal') out[parts[i].type] = parts[i].value;
+      return out.year + '-' + out.month + '-' + out.day;
+    } catch (e) { return todayStr(); }
+  }
 
   function initWow() {
     if (!data.length || !window.Radio) return;
@@ -177,10 +189,15 @@
     var subEl = document.getElementById('wow-sub');
     var channelsEl = document.getElementById('wow-channels');
     var mixBtn = document.getElementById('wow-mix');
+    var dailyEpisodeBtn = document.getElementById('wow-daily-episode');
+    var dailyEpisodeTitle = document.getElementById('wow-daily-episode-title');
+    var dailyEpisodeMeta = document.getElementById('wow-daily-episode-meta');
+    var previewBtn = document.getElementById('wow-preview-next');
     var script = [];
     var paused = false;
     var mode = 'session';   // 'session' (generated daily five) | 'episode' (real)
     var currentEp = null;
+    var episodePreview = false;
     var epProg = null;      // timeupdate handler while an episode plays
 
     function renderTranscript() {
@@ -220,6 +237,20 @@
         var target = transcriptEl.scrollTop + (aRect.top - cRect.top) - (transcriptEl.clientHeight / 2) + (aRect.height / 2);
         transcriptEl.scrollTo({ top: Math.max(0, target), behavior: REDUCE ? 'auto' : 'smooth' });
       }
+    }
+
+    function dailyEpisode() {
+      return window.Proverbs.dailyCyclePick(EPISODES, jamaicaDateStr(episodePreview ? 1 : 0));
+    }
+
+    function renderDailyEpisodeChannel() {
+      var ep = dailyEpisode();
+      if (!ep) return;
+      if (dailyEpisodeTitle) dailyEpisodeTitle.textContent = episodePreview ? 'Tomorrow: ' + ep.title : 'Today’s real: ' + ep.title;
+      if (dailyEpisodeMeta) dailyEpisodeMeta.textContent = 'real · ' + fmtDur(ep.dur);
+      if (previewBtn) previewBtn.innerHTML = episodePreview
+        ? '<i class="ti ti-arrow-back" aria-hidden="true"></i> Back to today'
+        : '<i class="ti ti-flask" aria-hidden="true"></i> Preview tomorrow';
     }
 
     function newSession(random) {
@@ -265,7 +296,7 @@
       currentEp = ep;
       script = [{ kind: 'episode', voice: 'a', speaker: 'Auntie Pearl', text: ep.title, audioSrc: ep.src }];
       if (mixBtn) mixBtn.hidden = true;
-      if (subEl) subEl.textContent = 'Donald’s real episode — two voices reasoning pon ' + ep.title.toLowerCase();
+      if (subEl) subEl.textContent = (episodePreview ? 'Tomorrow’s preview' : 'Today’s real episode') + ' — two voices reasoning pon ' + ep.title.toLowerCase();
       renderEpisodeCard(ep);
       setProgress(0); barEl.style.width = '0%';
       updateChannelUI();
@@ -300,7 +331,7 @@
 
     function updateChannelUI() {
       if (!channelsEl) return;
-      var active = (mode === 'episode' && currentEp) ? currentEp.slug : 'session';
+      var active = (mode === 'episode' && currentEp) ? 'episode' : 'session';
       var chans = channelsEl.querySelectorAll('.chan');
       for (var i = 0; i < chans.length; i++) {
         chans[i].classList.toggle('is-active', chans[i].getAttribute('data-chan') === active);
@@ -406,9 +437,16 @@
       if (!btn) return;
       var chan = btn.getAttribute('data-chan');
       if (chan === 'session') { if (mode !== 'session') selectSession(); }
-      else { var ep = epBySlug(chan); if (ep) selectEpisode(ep); }
+      else if (chan === 'episode') selectEpisode(dailyEpisode());
     });
 
+    if (previewBtn) previewBtn.addEventListener('click', function () {
+      episodePreview = !episodePreview;
+      renderDailyEpisodeChannel();
+      if (mode === 'episode') selectEpisode(dailyEpisode());
+    });
+
+    renderDailyEpisodeChannel();
     newSession();
   }
 
