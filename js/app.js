@@ -66,6 +66,13 @@
 
   function clipUrl(key) { return 'audio/proverbs/' + key + '.mp3'; }
 
+  // ElevenLabs clips that don't currently exist — the intro.b readings were
+  // removed when they miscounted ("five"), and can't be regenerated without the
+  // API key. Lines mapping to these are dropped from the podcast so the whole
+  // session stays sole-ElevenLabs (nothing falls back to the browser voice).
+  // Once `npm run build:audio` regenerates them, empty this to restore the line.
+  var UNVOICED = { 'intro.b.0': true, 'intro.b.1': true, 'intro.b.2': true };
+
   // The clip filename (sans .mp3) for a script line, or null if it has none.
   // Mirrors the keys in Proverbs.audioManifest so generated clips line up.
   function clipKeyFor(line, picks) {
@@ -228,16 +235,17 @@
       // the day (same picks and banter for everyone) and fresh tomorrow.
       var picks = window.Proverbs.dailyPicks(data, todayStr(), 3);
       script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS, window.Proverbs.seededRng(todayStr()));
-      // Every line gets audio: patois lines prefer the real recording (falling
-      // back to the generated clip), other lines use their clip; TTS fills gaps.
+      // Sole ElevenLabs: the whole podcast plays the pre-generated host clips —
+      // no real recordings mixed in (those belong to the Daily Wud "Hear it"),
+      // and no browser TTS. Drop any line whose clip is currently missing so
+      // nothing falls back to the browser voice.
+      script = script.filter(function (line) {
+        var key = clipKeyFor(line, picks);
+        return !(key && UNVOICED[key]);
+      });
       script.forEach(function (line) {
         var key = clipKeyFor(line, picks);
-        if (!key) return;
-        line.audioSrc = clipUrl(key);
-        if (line.kind === 'patois') {
-          var rec = recUrl(picks[line.proverb]);
-          if (rec) { line.audioAlt = line.audioSrc; line.audioSrc = rec; }
-        }
+        if (key) line.audioSrc = clipUrl(key);
       });
       renderTranscript();
       statusEl.textContent = 'Di day’s three ready — press play fi hear Auntie Pearl an Uncle Roy.';
