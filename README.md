@@ -3,16 +3,18 @@
 A colourful, self-contained web page celebrating Jamaican Patois proverbs from
 Donald Thompson's "Wud fi Tideh" podcast.
 
-- **The Daily Wud** — today's proverb with its English translation and meaning,
-  plus up to two shuffles: 3 wuds per day, then come back tomorrow.
-- **Wuds of Wisdom** — a studio with switchable **channels**. *Di Daily Five* is
-  the day's five proverbs (randomly chosen but fixed for the day, fresh tomorrow)
-  as a two-host radio segment with a live transcript, plus a "Mix up anodda five"
-  button for a different random session on demand; its proverb lines prefer
-  Donald's real recordings (see "Real recordings" below), then the generated
-  clips, then the browser voice. Alongside it, the studio unlocks **one real
-  podcast episode per Jamaica calendar day** — the same episode for everyone,
-  with tomorrow's episode available only through a small preview control.
+- **The Daily Wud** — the day's three proverbs, each with its English translation
+  and meaning. "Gimme anodda one" cycles through the three (fixed for the day,
+  fresh tomorrow); "Back to today" returns to the first. The same three feed
+  Wuds of Wisdom.
+- **Wuds of Wisdom** — a studio with switchable **channels**. *Di Daily Three*
+  voices the day's three proverbs (the same set as The Daily Wud — seeded, fixed
+  for the day, fresh tomorrow) as a two-host radio segment with a live transcript;
+  its proverb lines prefer Donald's real recordings (see "Real recordings" below),
+  then the generated clips, then the browser voice. Alongside it, the studio
+  unlocks **one real podcast episode per Jamaica calendar day** — the same episode
+  for everyone, with tomorrow's episode available only through a small preview
+  control.
 - **Test yu Patois** — a Duolingo-style quiz in a full-screen takeover: fill
   di blank, build di phrase from word chips, ear tests on the authentic audio,
   and match di meaning — with hearts, combos, ranks (Newcomer → Real Yardie),
@@ -47,12 +49,12 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 ## Real recordings
 
-The spreadsheet's "Audio File" column names a real recording for every proverb
-(`<slug>.ogg` or `<slug>.mp3`). Drop those files into `audio/recordings/` —
-keeping the exact filenames — and commit them. Wherever a proverb is spoken
-(Daily Wud "Hear it", the patois lines in Wuds of Wisdom), the site plays the
-real recording first, falling back to the generated clip (and then the browser
-voice) if the file is missing or the browser can't decode it. The quiz's ear
+Donald's real recorded readings live in `audio/recordings/` as `<slug>.mp3`, one
+per proverb. Wherever a proverb is spoken (Daily Wud "Hear it", the patois lines
+in Wuds of Wisdom), the site plays the real recording first, falling back to the
+generated clip (and then the browser voice) if the file is missing or can't
+decode. To replace a reading, drop a new `<slug>.mp3` with the same name. The
+quiz's ear
 tests deliberately stay on the generated clips so the blanked word is always a
 clean, single phrase.
 

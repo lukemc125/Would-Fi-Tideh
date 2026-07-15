@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=14" />
+  <link rel="stylesheet" href="css/styles.css?v=15" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -65,15 +65,6 @@
           <span class="b-count" id="quiz-count"></span>
           <button id="quiz-start" class="btn" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> Play today&rsquo;s game</button>
         </div>
-        <div class="b-tile b-radio">
-          <h3><i class="ti ti-radio" aria-hidden="true"></i> Wuds of Wisdom</h3>
-          <span class="b-sub">Di day&rsquo;s five &middot; Auntie Pearl &amp; Uncle Roy</span>
-          <button id="radio-jump" class="btn btn-green" type="button"><i class="ti ti-player-play" aria-hidden="true"></i> On air</button>
-        </div>
-      </div>
-      <div class="bento-row">
-        <button class="b-mini b-orig" type="button" data-jump="#original"><i class="ti ti-disc" aria-hidden="true"></i> Hear the Original <small>Donald Thompson&rsquo;s podcast</small></button>
-        <button class="b-mini b-leg" type="button" data-jump="#legends"><i class="ti ti-feather" aria-hidden="true"></i> The Voice of the People <small>Miss Lou &amp; McKay</small></button>
       </div>
     </section>
 
@@ -82,12 +73,11 @@
         <div class="wow-head">
           <div>
             <h2>Wuds of Wisdom</h2>
-            <p id="wow-sub">Di day&rsquo;s five proverbs, one likkle radio session — fresh every day</p>
+            <p id="wow-sub">Di day&rsquo;s three proverbs plus one likkle radio session fi hol&rsquo; a reasoning&hellip; &mdash; fresh every day</p>
           </div>
-          <button id="wow-mix" class="btn btn-orange" type="button"><i class="ti ti-refresh" aria-hidden="true"></i> Mix up anodda five</button>
         </div>
         <div class="wow-channels" id="wow-channels" role="group" aria-label="Choose a channel">
-          <button class="chan is-active" data-chan="session" type="button"><i class="ti ti-cards" aria-hidden="true"></i> Di Daily Five <span class="chan-tag">yaad hosts</span></button>
+          <button class="chan is-active" data-chan="session" type="button"><i class="ti ti-cards" aria-hidden="true"></i> Di Daily Three <span class="chan-tag">yaad hosts</span></button>
           <button class="chan chan-real" id="wow-daily-episode" data-chan="episode" type="button"><i class="ti ti-microphone" aria-hidden="true"></i> <span id="wow-daily-episode-title">Today&rsquo;s real episode</span> <span class="chan-tag" id="wow-daily-episode-meta">real recording</span></button>
           <button class="chan-preview" id="wow-preview-next" type="button"><i class="ti ti-flask" aria-hidden="true"></i> Preview tomorrow</button>
         </div>
@@ -217,7 +207,7 @@
 
   <!-- Bump ?v= on each asset whenever you change it, so browsers fetch fresh. -->
   <script src="js/data.js?v=3"></script>
-  <script src="js/proverbs.js?v=4"></script>
+  <script src="js/proverbs.js?v=5"></script>
   <script src="js/theme.js?v=2"></script>
   <script src="js/audio.js?v=3"></script>
   <script src="js/ui.js?v=2"></script>
@@ -226,6 +216,6 @@
   <script src="js/studio.js?v=2"></script>
   <script src="js/quiz.js?v=2"></script>
   <script src="js/quiz-ui.js?v=3"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/app.js?v=11"></script>
 </body>
 </html>

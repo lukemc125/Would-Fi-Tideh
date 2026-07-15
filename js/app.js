@@ -16,75 +16,42 @@
     } catch (e) { return todayStr(); }
   }
 
-  var dailyIdx = null;
-  var todayIdx = null;
+  // The three proverbs fi tideh: a seeded set, fixed for the day and fresh
+  // tomorrow. The SAME three feed Wuds of Wisdom, so both sections agree.
+  // "Gimme anodda one" cycles through them (0 → 1 → 2 → 0), so it always works;
+  // "Back to today" jumps back to the first.
+  var dailyThree = [];
+  var dailyCursor = 0;
 
-  function renderDaily(idx, isToday) {
-    var p = data[idx];
+  function renderDaily(i) {
+    var p = dailyThree[i];
     if (!p) return;
-    dailyIdx = idx;
+    dailyCursor = i;
     document.getElementById('daily-original').textContent = p.original;
     document.getElementById('daily-english').textContent = '"' + p.english + '"';
     document.getElementById('daily-meaning').textContent = p.meaning;
     document.getElementById('daily-date').textContent = prettyDate();
-    document.getElementById('daily-reset').hidden = !!isToday;
-  }
-
-  // At most 3 daily wuds per calendar day: today's wud plus two shuffles.
-  var DAILY_LIMIT = 3;
-  var dayState = { date: '', seen: [] };
-
-  function loadDayState() {
-    try {
-      var raw = localStorage.getItem('wft-daily');
-      if (raw) {
-        var s = JSON.parse(raw);
-        if (s && s.date === todayStr() && Array.isArray(s.seen) && s.seen.length) { dayState = s; return; }
-      }
-    } catch (e) {}
-    dayState = { date: todayStr(), seen: [todayIdx] };
-    saveDayState();
-  }
-  function saveDayState() { try { localStorage.setItem('wft-daily', JSON.stringify(dayState)); } catch (e) {} }
-
-  function renderDailyMeta() {
-    var left = Math.max(0, DAILY_LIMIT - dayState.seen.length);
-    var btn = document.getElementById('daily-shuffle');
+    document.getElementById('daily-reset').hidden = (i === 0);
     var note = document.getElementById('daily-left');
-    btn.disabled = left === 0;
-    if (note) {
-      note.textContent = left > 0
-        ? left + ' more wud' + (left === 1 ? '' : 's') + ' fi tideh'
-        : 'Dat a di ' + DAILY_LIMIT + ' fi tideh — come back tomorrow!';
-    }
+    if (note) note.textContent = 'Wud ' + (i + 1) + ' of ' + dailyThree.length + ' fi tideh';
   }
 
   function initDaily() {
     if (!data.length) return;
-    todayIdx = P.dailyIndex(todayStr(), data.length);
-    loadDayState();
-    renderDaily(todayIdx, true);
-    renderDailyMeta();
+    dailyThree = P.dailyPicks(data, todayStr(), 3);
+    if (!dailyThree.length) return;
+    renderDaily(0);
 
     document.getElementById('daily-shuffle').addEventListener('click', function () {
-      if (dayState.seen.length >= DAILY_LIMIT) { renderDailyMeta(); return; }
-      var unseen = [];
-      for (var i = 0; i < data.length; i++) {
-        if (dayState.seen.indexOf(i) < 0) unseen.push(i);
-      }
-      if (!unseen.length) return;
-      var idx = unseen[Math.floor(Math.random() * unseen.length)];
-      dayState.seen.push(idx);
-      saveDayState();
-      renderDaily(idx, false);
-      renderDailyMeta();
-      hearProverb(data[idx]);
+      var next = (dailyCursor + 1) % dailyThree.length;
+      renderDaily(next);
+      hearProverb(dailyThree[next]);
     });
     document.getElementById('daily-reset').addEventListener('click', function () {
-      renderDaily(todayIdx, true);
+      renderDaily(0);
     });
     document.getElementById('daily-hear').addEventListener('click', function () {
-      hearProverb(data[dailyIdx]);
+      hearProverb(dailyThree[dailyCursor]);
     });
   }
 
@@ -113,12 +80,11 @@
     }
   }
 
-  // The real recording from the spreadsheet's Audio File column, when present.
-  function recUrl(p) { return p && p.audio ? 'audio/recordings/' + encodeURIComponent(p.audio) : null; }
+  // The real recorded reading for a proverb (audio/recordings/<slug>.mp3).
+  function recUrl(p) { return p && p.slug ? 'audio/recordings/' + encodeURIComponent(p.slug) + '.mp3' : null; }
 
-  // Play a proverb aloud, preferring Donald's real recording, then the
-  // generated clip, then browser speech. (The recording can also fail on
-  // browsers that can't decode .ogg — the chain covers that too.)
+  // Play a proverb aloud, preferring the real recording, then the generated
+  // clip, then browser speech (if the recording is missing or won't decode).
   var dailyAudio = null;
   function hearProverb(p) {
     if (!p) return;
@@ -149,15 +115,15 @@
   }
 
   // Donald's real, longer podcast episodes (his NotebookLM two-host sessions),
-  // one per theme. Unlike the per-proverb clips these don't map to a single
-  // proverb — they play whole, through the same studio, as an alternate
-  // "channel" to the generated Daily Five.
+  // one per theme. One is unlocked per Jamaica calendar day (see dailyEpisode),
+  // rotating by one each day. Order matters: it sets the rotation sequence, and
+  // is arranged so the live rotation featured "Clarity" on launch day.
   var EPISODES = [
     { slug: 'accountability', title: 'Accountability', src: 'audio/episodes/accountability.mp3', dur: 336 },
-    { slug: 'clarity',        title: 'Clarity',        src: 'audio/episodes/clarity.mp3',        dur: 326 },
     { slug: 'faith',          title: 'Faith',          src: 'audio/episodes/faith.mp3',          dur: 311 },
     { slug: 'family',         title: 'Family',         src: 'audio/episodes/family.mp3',         dur: 306 },
-    { slug: 'work',           title: 'Work',           src: 'audio/episodes/work.mp3',           dur: 216 }
+    { slug: 'work',           title: 'Work',           src: 'audio/episodes/work.mp3',           dur: 216 },
+    { slug: 'clarity',        title: 'Clarity',        src: 'audio/episodes/clarity.mp3',        dur: 326 }
   ];
   function fmtDur(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
 
@@ -188,7 +154,6 @@
     var stopBtn = document.getElementById('wow-stop');
     var subEl = document.getElementById('wow-sub');
     var channelsEl = document.getElementById('wow-channels');
-    var mixBtn = document.getElementById('wow-mix');
     var dailyEpisodeBtn = document.getElementById('wow-daily-episode');
     var dailyEpisodeTitle = document.getElementById('wow-daily-episode-title');
     var dailyEpisodeMeta = document.getElementById('wow-daily-episode-meta');
@@ -246,27 +211,23 @@
     function renderDailyEpisodeChannel() {
       var ep = dailyEpisode();
       if (!ep) return;
-      if (dailyEpisodeTitle) dailyEpisodeTitle.textContent = episodePreview ? 'Tomorrow: ' + ep.title : 'Today’s real: ' + ep.title;
+      if (dailyEpisodeTitle) dailyEpisodeTitle.textContent = (episodePreview ? 'Tomorrow’s reasoning: ' : 'Today’s reasoning: ') + ep.title;
       if (dailyEpisodeMeta) dailyEpisodeMeta.textContent = 'real · ' + fmtDur(ep.dur);
       if (previewBtn) previewBtn.innerHTML = episodePreview
         ? '<i class="ti ti-arrow-back" aria-hidden="true"></i> Back to today'
         : '<i class="ti ti-flask" aria-hidden="true"></i> Preview tomorrow';
     }
 
-    function newSession(random) {
+    function newSession() {
       player.stop();
       paused = false;
       mode = 'session';
       currentEp = null;
       if (S) S.autoTurns(false);
-      if (mixBtn) mixBtn.hidden = false;
-      // Default: today's five, seeded by the date, so the session is fixed for
-      // the day (same picks and banter for everyone) and fresh tomorrow. The
-      // "Mix up anodda five" button passes random=true for a fresh set on
-      // demand, with varied banter each time.
-      var rng = random ? Math.random : window.Proverbs.seededRng(todayStr());
-      var picks = random ? window.Proverbs.pickN(data, 5) : window.Proverbs.dailyPicks(data, todayStr(), 5);
-      script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS, rng);
+      // The same three proverbs as The Daily Wud — seeded by the date, fixed for
+      // the day (same picks and banter for everyone) and fresh tomorrow.
+      var picks = window.Proverbs.dailyPicks(data, todayStr(), 3);
+      script = window.Proverbs.generateScript(picks, window.Proverbs.DEFAULT_HOSTS, window.Proverbs.seededRng(todayStr()));
       // Every line gets audio: patois lines prefer the real recording (falling
       // back to the generated clip), other lines use their clip; TTS fills gaps.
       script.forEach(function (line) {
@@ -279,9 +240,7 @@
         }
       });
       renderTranscript();
-      statusEl.textContent = random
-        ? 'Anodda five mix up — press play fi hear Auntie Pearl an Uncle Roy.'
-        : 'Di day’s five ready — press play fi hear Auntie Pearl an Uncle Roy.';
+      statusEl.textContent = 'Di day’s three ready — press play fi hear Auntie Pearl an Uncle Roy.';
       showPlaying(false);
       updateChannelUI();
     }
@@ -295,8 +254,7 @@
       mode = 'episode';
       currentEp = ep;
       script = [{ kind: 'episode', voice: 'a', speaker: 'Auntie Pearl', text: ep.title, audioSrc: ep.src }];
-      if (mixBtn) mixBtn.hidden = true;
-      if (subEl) subEl.textContent = (episodePreview ? 'Tomorrow’s preview' : 'Today’s real episode') + ' — two voices reasoning pon ' + ep.title.toLowerCase();
+      if (subEl) subEl.textContent = (episodePreview ? 'Tomorrow’s reasoning' : 'Today’s reasoning') + ' — two co-hosts pon ' + ep.title.toLowerCase();
       renderEpisodeCard(ep);
       setProgress(0); barEl.style.width = '0%';
       updateChannelUI();
@@ -312,8 +270,8 @@
       if (S) { S.autoTurns(false); S.onStop(); }
       if (B) B.release();
       unbindEpisodeProgress();
-      if (subEl) subEl.textContent = 'Di day’s five proverbs, one likkle radio session — fresh every day';
-      newSession(false);
+      if (subEl) subEl.textContent = 'Di day’s three proverbs plus one likkle radio session fi hol’ a reasoning… — fresh every day';
+      newSession();
     }
 
     function renderEpisodeCard(ep) {
@@ -323,8 +281,7 @@
       card.innerHTML =
         '<div class="ep-badge"><span class="ep-live-dot"></span> Real recording &middot; ' + fmtDur(ep.dur) + '</div>' +
         '<div class="ep-theme">' + escapeHtml(ep.title) + '</div>' +
-        '<p class="ep-desc">Donald Thompson an him co-host reason pon di ol’-time wisdom fi <strong>' + escapeHtml(ep.title.toLowerCase()) + '</strong> — di actual podcast episode, not a generated one.</p>' +
-        '<p class="ep-note">Up top, di two hosts trade di mic as di talkin’ switch, mouthin’ along to di real audio. No written transcript yet.</p>';
+        '<p class="ep-desc">In this deep-dive conversation, the two co-hosts hol’ a lively reasoning on several of Thompson’s wuds of wisdom relating to “<strong>' + escapeHtml(ep.title) + '</strong>”.</p>';
       transcriptEl.appendChild(card);
       transcriptEl.scrollTop = 0;
     }
@@ -354,7 +311,7 @@
     function sessionCallbacks() {
       return {
         onLineStart: function (i, line) { highlight(i); if (S) S.setSpeaker(line.voice); if (B) B.perchOnHost(line.voice); },
-        onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); if (B) B.release(); statusEl.textContent = 'Dat done! Mix up a new session?'; setProgress(script.length); },
+        onEnd: function () { paused = false; showPlaying(false); if (S) S.onEnd(); if (B) B.release(); statusEl.textContent = 'Dat done! Press play fi hear it again.'; setProgress(script.length); },
         onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan talk — but read di transcript below.'; }
       };
     }
@@ -362,7 +319,7 @@
     function episodeCallbacks() {
       return {
         onLineStart: function () { if (B) B.perchOnHost('a'); },
-        onEnd: function () { paused = false; showPlaying(false); if (S) { S.autoTurns(false); S.onEnd(); } if (B) B.release(); unbindEpisodeProgress(); barEl.style.width = '100%'; statusEl.textContent = 'Dat episode done — pick anodda channel, or back to Di Daily Five.'; },
+        onEnd: function () { paused = false; showPlaying(false); if (S) { S.autoTurns(false); S.onEnd(); } if (B) B.release(); unbindEpisodeProgress(); barEl.style.width = '100%'; statusEl.textContent = 'Dat episode done — back to Di Daily Three, or preview tomorrow.'; },
         onUnsupported: function () { statusEl.textContent = 'Yu browser cyaan play dis audio.'; }
       };
     }
@@ -409,7 +366,7 @@
       }
       if (!script.length) {
         if (mode === 'episode' && currentEp) script = [{ kind: 'episode', voice: 'a', speaker: 'Auntie Pearl', text: currentEp.title, audioSrc: currentEp.src }];
-        else newSession(false);
+        else newSession();
       }
       beginPlay();
     });
@@ -429,8 +386,6 @@
       setProgress(0); barEl.style.width = '0%';
       statusEl.textContent = 'Stopped.';
     });
-
-    if (mixBtn) mixBtn.addEventListener('click', function () { paused = false; if (S) { S.autoTurns(false); S.onStop(); } if (B) B.release(); newSession(true); });
 
     if (channelsEl) channelsEl.addEventListener('click', function (e) {
       var btn = e.target && e.target.closest ? e.target.closest('.chan') : null;

@@ -89,9 +89,9 @@
     'Greetings, mi people! Time fi some sweet wisdom.'
   ];
   var INTRO_B = [
-    'Big up everybody tunin in. Wi have five proverb fi yu today.',
-    'Wi pick five likkle gem fi share wid yu. Come een.',
-    'Settle yusself, wi have five ole-time sayin fi yu.'
+    'Big up everybody tunin in. Wi have some ole-time wisdom fi yu today.',
+    'Wi pick some likkle gem fi share wid yu. Come een.',
+    'Settle yusself, wi have some sweet ole-time sayin fi yu.'
   ];
   var TRANS_FIXED = 'Dat mean: "{E}."';
   var MEANING_FIXED = 'In oder wuds, {M}';
