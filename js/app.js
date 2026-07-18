@@ -66,12 +66,13 @@
 
   function clipUrl(key) { return 'audio/proverbs/' + key + '.mp3'; }
 
-  // ElevenLabs clips that don't currently exist — the intro.b readings were
-  // removed when they miscounted ("five"), and can't be regenerated without the
-  // API key. Lines mapping to these are dropped from the podcast so the whole
-  // session stays sole-ElevenLabs (nothing falls back to the browser voice).
-  // Once `npm run build:audio` regenerates them, empty this to restore the line.
-  var UNVOICED = { 'intro.b.0': true, 'intro.b.1': true, 'intro.b.2': true };
+  // ElevenLabs clips that don't exist yet — the intro.b readings (removed when
+  // they miscounted "five") and Uncle Roy's "Nex' one…" cue ('next'), neither
+  // regenerable without the API key. Lines mapping to these are dropped from the
+  // podcast so the whole session stays sole-ElevenLabs (nothing falls back to the
+  // browser voice). Once `npm run build:audio` generates them, empty this to
+  // restore the lines (the inter-proverb pause works regardless).
+  var UNVOICED = { 'intro.b.0': true, 'intro.b.1': true, 'intro.b.2': true, 'next': true };
 
   // The clip filename (sans .mp3) for a script line, or null if it has none.
   // Mirrors the keys in Proverbs.audioManifest so generated clips line up.
@@ -83,6 +84,7 @@
       case 'meaning': return p ? p.slug + '.meaning' : null;
       case 'intro': return 'intro.' + line.voice + '.' + line.variant;
       case 'outro': return 'outro.' + line.variant;
+      case 'transition': return 'next';
       default: return null;
     }
   }
@@ -280,6 +282,7 @@
       unbindEpisodeProgress();
       if (subEl) subEl.textContent = 'Di day’s three proverbs plus one likkle radio session fi hol’ a reasoning… — fresh every day';
       newSession();
+      beginPlay();   // start right away, like the episode channel
     }
 
     function renderEpisodeCard(ep) {
@@ -399,7 +402,7 @@
       var btn = e.target && e.target.closest ? e.target.closest('.chan') : null;
       if (!btn) return;
       var chan = btn.getAttribute('data-chan');
-      if (chan === 'session') { if (mode !== 'session') selectSession(); }
+      if (chan === 'session') selectSession();
       else if (chan === 'episode') selectEpisode(dailyEpisode());
     });
 

@@ -100,6 +100,8 @@
     'Tek dem wid yu. Walk good, till wi chat again!',
     'Likkle but talawah. Walk good, everybody!'
   ];
+  // Uncle Roy's cue before the 2nd and 3rd proverb, so they don't run together.
+  var NEXT_LINE = "Nex' one…";
 
   function lowerFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
   function transText(p) { return TRANS_FIXED.replace('{E}', p.english); }
@@ -109,24 +111,30 @@
     rng = rng || Math.random;
     hosts = hosts || DEFAULT_HOSTS;
     var lines = [];
-    function add(host, kind, text, proverb, variant) {
+    // pauseAfter: ms of silence the player holds after this line before the
+    // next, so the reading breathes instead of running together.
+    function add(host, kind, text, proverb, variant, pauseAfter) {
       lines.push({ speaker: host.name, voice: host.voice, text: text, kind: kind,
-        proverb: (proverb == null ? null : proverb), variant: (variant == null ? null : variant) });
+        proverb: (proverb == null ? null : proverb), variant: (variant == null ? null : variant),
+        pauseAfter: (pauseAfter || 0) });
     }
     var ia = Math.floor(rng() * INTRO_A.length);
     var ib = Math.floor(rng() * INTRO_B.length);
     add(hosts.a, 'intro', INTRO_A[ia], null, ia);
-    add(hosts.b, 'intro', INTRO_B[ib], null, ib);
+    add(hosts.b, 'intro', INTRO_B[ib], null, ib, 300);
 
     // Auntie Pearl (a) reads the proverb and its meaning; Uncle Roy (b) gives the
     // translation. Every line's text is deterministic for a given proverb (the
     // intro/outro carry a `variant` index), so each line maps to exactly one
-    // pre-generated clip and the audio always matches the transcript.
+    // pre-generated clip and the audio always matches the transcript. Between
+    // expressions Uncle Roy cues "Nex' one…" and the player holds a longer beat.
     for (var i = 0; i < proverbs.length; i++) {
       var p = proverbs[i];
-      add(hosts.a, 'patois', '"' + p.original + '"', i, null);
-      add(hosts.b, 'translation', transText(p), i, null);
-      add(hosts.a, 'meaning', meaningText(p), i, null);
+      var last = (i === proverbs.length - 1);
+      if (i > 0) add(hosts.b, 'transition', NEXT_LINE, null, null, 400);
+      add(hosts.a, 'patois', '"' + p.original + '"', i, null, 250);
+      add(hosts.b, 'translation', transText(p), i, null, 250);
+      add(hosts.a, 'meaning', meaningText(p), i, null, last ? 300 : 900);
     }
 
     var io = Math.floor(rng() * OUTRO.length);
@@ -144,6 +152,8 @@
     OUTRO.forEach(function (t, i) { out.push({ clip: 'outro.' + i, text: t, voice: 'b' }); });
     // Uncle Roy's spoken congrats on finishing the quiz (voice b = male).
     out.push({ clip: 'quiz.success', text: 'Big up yuhself. Yah real yaadie', voice: 'b' });
+    // Uncle Roy's "Nex' one…" cue between proverbs in the podcast.
+    out.push({ clip: 'next', text: NEXT_LINE, voice: 'b' });
     proverbs.forEach(function (p) {
       if (!p.slug) return;
       out.push({ clip: p.slug, text: p.original, voice: 'a' });
