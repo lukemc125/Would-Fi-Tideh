@@ -419,24 +419,6 @@
     });
   }
 
-  function initPodcast() {
-    var audio = document.getElementById('podcast-audio');
-    var player = document.getElementById('podcast-player');
-    var missing = document.getElementById('podcast-missing');
-    if (!audio) return;
-    var vinyl = document.querySelector('#original .vinyl');
-    function spin(on) { if (vinyl) vinyl.classList.toggle('spinning', on); }
-    // If the file is present and loadable, show the player; otherwise keep the
-    // "coming soon" note. 'error' fires when the src 404s.
-    audio.addEventListener('error', function () { player.hidden = true; missing.hidden = false; spin(false); });
-    audio.addEventListener('loadedmetadata', function () { player.hidden = false; missing.hidden = true; });
-    audio.addEventListener('play', function () { spin(true); });
-    audio.addEventListener('pause', function () { spin(false); });
-    audio.addEventListener('ended', function () { spin(false); });
-    // Trigger a metadata probe without autoplaying.
-    try { audio.load(); } catch (e) {}
-  }
-
   // Bento launcher tiles: radio tile scrolls to the studio and starts the
   // session; mini tiles jump to their sections.
   function initBoard() {
@@ -477,7 +459,6 @@
     if (window.Sky) window.Sky.initSky(document, window);
     initDaily();
     initWow();
-    initPodcast();
     initBoard();
     initPortraits();
   });

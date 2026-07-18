@@ -342,6 +342,31 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
+  // Uncle Roy's spoken congrats on finishing the game. Plays the real ElevenLabs
+  // clip when present; until it's generated the browser voice reads it as a
+  // stopgap. Respects the quiz mute toggle.
+  var YAADIE_TEXT = 'Big up yuhself. Yah real yaadie';
+  function playYaadie() {
+    if (store.muted) return;
+    var fellBack = false;
+    function speak() {
+      if (fellBack) return; fellBack = true;
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(YAADIE_TEXT);
+        u.rate = 0.95; u.pitch = 0.8; u.lang = 'en-US';
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+    try {
+      var a = new Audio('audio/proverbs/quiz.success.mp3');
+      a.onerror = speak;
+      var p = a.play();
+      if (p && p.catch) p.catch(speak);
+    } catch (e) { speak(); }
+  }
+
   function endScreen() {
     stopEar();
     hideBanner();
@@ -362,6 +387,7 @@
       (outOfHearts ? '<p class="q-kind">Hearts done!</p>' : '<p class="q-kind">Round done!</p>') +
       '<p class="quiz-score-big">' + s.score + '</p>' +
       '<p class="quiz-verdict">' + Q.verdictFor(accuracy) + '</p>' +
+      (outOfHearts ? '' : '<p class="quiz-yaadie">&ldquo;' + esc(YAADIE_TEXT) + '&rdquo;<span class="yaadie-who">Uncle Roy</span></p>') +
       '<div class="quiz-end-stats">' +
       '<span class="quiz-stat"><i class="ti ti-target" aria-hidden="true"></i> ' + Math.round(accuracy * 100) + '%</span>' +
       '<span class="quiz-stat"><i class="ti ti-flame" aria-hidden="true"></i> ' + s.bestCombo + ' best combo</span>' +
@@ -379,6 +405,7 @@
     document.getElementById('quiz-done').addEventListener('click', close);
     startEndCountdown();
     sfx('fanfare');
+    if (!outOfHearts) window.setTimeout(playYaadie, 550);
     if (!REDUCE && accuracy >= 0.5) confetti();
     document.getElementById('quiz-again').focus();
   }

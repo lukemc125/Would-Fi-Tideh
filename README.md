@@ -95,11 +95,6 @@ photo works. **Use properly-licensed images:** Marcus Garvey and Claude McKay
 have well-known public-domain photographs (e.g. on Wikimedia Commons); Miss Lou
 (d. 2006) is more likely still under copyright, so source hers with care.
 
-## Add the original podcast
-
-Drop the mp3 at `audio/wud-fi-tideh.mp3`. The "Hear the Original" player
-activates automatically; until then it shows a "coming soon" note.
-
 ## Better voices (authentic Jamaican audio)
 
 By default the spoken audio uses the browser's built-in speech, which only
@@ -111,7 +106,9 @@ to the browser voice.
 **Automated, both hosts (paid API):** using Voice Library voices via the API
 needs a paid plan (Starter and up) plus a full-access API key. This generates
 the whole two-host segment — Auntie Pearl (`VOICE_A`, female) reads each proverb
-and its meaning, Uncle Roy (`VOICE_B`, male) gives the translation:
+and its meaning, Uncle Roy (`VOICE_B`, male) gives the translation. It also
+generates `quiz.success.mp3` (Uncle Roy's "Big up yuhself. Yah real yaadie"
+congrats, played when you finish the quiz):
 
 ```bash
 ELEVENLABS_API_KEY=your_key \

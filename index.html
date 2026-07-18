@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=15" />
+  <link rel="stylesheet" href="css/styles.css?v=16" />
   <script>
     document.documentElement.classList.add('js');
     (function () {
@@ -29,7 +29,6 @@
     <nav class="site-nav" aria-label="Sections">
       <a href="#daily">Daily Wud</a>
       <a href="#wow">Wuds of Wisdom</a>
-      <a href="#original">The Original</a>
       <a href="#legends">Legends</a>
     </nav>
     <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"></button>
@@ -130,20 +129,6 @@
       </div>
     </section>
 
-    <section id="original" class="section" data-reveal>
-      <div class="podcast">
-        <div class="vinyl" aria-hidden="true"><span></span></div>
-        <div class="podcast-body">
-          <h2>Hear the Original</h2>
-          <p>Donald Thompson's "Wud fi Tideh" podcast</p>
-          <audio id="podcast-audio" preload="none" src="audio/wud-fi-tideh.mp3"></audio>
-          <div id="podcast-player" class="podcast-player" hidden>
-            <button class="btn btn-gold" type="button" onclick="document.getElementById('podcast-audio').play()"><i class="ti ti-player-play" aria-hidden="true"></i> Play</button>
-          </div>
-          <p id="podcast-missing" class="podcast-missing">The original recording is coming soon.</p>
-        </div>
-      </div>
-    </section>
 
     <section id="legends" class="legends" data-reveal>
       <div class="legends-inner">
@@ -207,7 +192,7 @@
 
   <!-- Bump ?v= on each asset whenever you change it, so browsers fetch fresh. -->
   <script src="js/data.js?v=3"></script>
-  <script src="js/proverbs.js?v=5"></script>
+  <script src="js/proverbs.js?v=6"></script>
   <script src="js/theme.js?v=2"></script>
   <script src="js/audio.js?v=3"></script>
   <script src="js/ui.js?v=2"></script>
@@ -215,7 +200,7 @@
   <script src="js/bird.js?v=5"></script>
   <script src="js/studio.js?v=2"></script>
   <script src="js/quiz.js?v=2"></script>
-  <script src="js/quiz-ui.js?v=3"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/quiz-ui.js?v=4"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>

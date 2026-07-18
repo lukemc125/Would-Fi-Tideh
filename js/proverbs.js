@@ -142,6 +142,8 @@
     INTRO_A.forEach(function (t, i) { out.push({ clip: 'intro.a.' + i, text: t, voice: 'a' }); });
     INTRO_B.forEach(function (t, i) { out.push({ clip: 'intro.b.' + i, text: t, voice: 'b' }); });
     OUTRO.forEach(function (t, i) { out.push({ clip: 'outro.' + i, text: t, voice: 'b' }); });
+    // Uncle Roy's spoken congrats on finishing the quiz (voice b = male).
+    out.push({ clip: 'quiz.success', text: 'Big up yuhself. Yah real yaadie', voice: 'b' });
     proverbs.forEach(function (p) {
       if (!p.slug) return;
       out.push({ clip: p.slug, text: p.original, voice: 'a' });
