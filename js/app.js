@@ -66,13 +66,10 @@
 
   function clipUrl(key) { return 'audio/proverbs/' + key + '.mp3'; }
 
-  // ElevenLabs clips that don't exist yet — the intro.b readings (removed when
-  // they miscounted "five") and Uncle Roy's "Nex' one…" cue ('next'), neither
-  // regenerable without the API key. Lines mapping to these are dropped from the
-  // podcast so the whole session stays sole-ElevenLabs (nothing falls back to the
-  // browser voice). Once `npm run build:audio` generates them, empty this to
-  // restore the lines (the inter-proverb pause works regardless).
-  var UNVOICED = { 'intro.b.0': true, 'intro.b.1': true, 'intro.b.2': true, 'next': true };
+  // ElevenLabs clip keys that don't exist yet get listed here and dropped from
+  // the podcast so it stays sole-ElevenLabs (no browser-voice fill). Currently
+  // none — intro.b, 'next', and quiz.success are all generated.
+  var UNVOICED = {};
 
   // The clip filename (sans .mp3) for a script line, or null if it has none.
   // Mirrors the keys in Proverbs.audioManifest so generated clips line up.
