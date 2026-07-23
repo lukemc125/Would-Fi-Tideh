@@ -121,7 +121,7 @@
     var ia = Math.floor(rng() * INTRO_A.length);
     var ib = Math.floor(rng() * INTRO_B.length);
     add(hosts.a, 'intro', INTRO_A[ia], null, ia);
-    add(hosts.b, 'intro', INTRO_B[ib], null, ib, 300);
+    add(hosts.b, 'intro', INTRO_B[ib], null, ib);
 
     // Auntie Pearl (a) reads the proverb and its meaning; Uncle Roy (b) gives the
     // translation. Every line's text is deterministic for a given proverb (the
@@ -131,10 +131,10 @@
     for (var i = 0; i < proverbs.length; i++) {
       var p = proverbs[i];
       var last = (i === proverbs.length - 1);
-      if (i > 0) add(hosts.b, 'transition', NEXT_LINE, null, null, 400);
-      add(hosts.a, 'patois', '"' + p.original + '"', i, null, 250);
-      add(hosts.b, 'translation', transText(p), i, null, 250);
-      add(hosts.a, 'meaning', meaningText(p), i, null, last ? 300 : 900);
+      if (i > 0) add(hosts.b, 'transition', NEXT_LINE, null, null, 200);
+      add(hosts.a, 'patois', '"' + p.original + '"', i, null);
+      add(hosts.b, 'translation', transText(p), i, null);
+      add(hosts.a, 'meaning', meaningText(p), i, null, last ? 0 : 400);
     }
 
     var io = Math.floor(rng() * OUTRO.length);

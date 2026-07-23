@@ -92,10 +92,15 @@
   // Play a proverb aloud, preferring the real recording, then the generated
   // clip, then browser speech (if the recording is missing or won't decode).
   var dailyAudio = null;
-  function hearProverb(p) {
-    if (!p) return;
+  var stopWowPlayback = null;  // set by initWow; lets the Daily Wud silence the podcast
+  function stopDailyAudio() {
     if (dailyAudio) { try { dailyAudio.pause(); } catch (e) {} dailyAudio = null; }
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+  function hearProverb(p) {
+    if (!p) return;
+    if (stopWowPlayback) stopWowPlayback();  // don't play over the radio session
+    stopDailyAudio();
     if (typeof Audio === 'undefined') { speak(p.original); return; }
     var sources = [];
     if (recUrl(p)) sources.push(recUrl(p));
@@ -334,6 +339,7 @@
 
     // Play whatever's currently loaded, with mode-appropriate callbacks.
     function beginPlay() {
+      stopDailyAudio();   // the session and the Daily Wud never play at once
       player.loadVoices(function () {
         if (mode === 'episode' && currentEp) {
           if (S) S.autoTurns(true);
@@ -366,6 +372,7 @@
     playBtn.addEventListener('click', function () {
       if (paused) {                      // resume where we left off
         paused = false;
+        stopDailyAudio();
         player.resume();
         showPlaying(true);
         if (S) S.onPlay();
@@ -385,7 +392,7 @@
       if (S) S.onPause();
       statusEl.textContent = 'Paused. Press play fi continue.';
     });
-    stopBtn.addEventListener('click', function () {
+    function stopPlayback() {
       player.stop(); paused = false; showPlaying(false);
       if (S) { S.autoTurns(false); S.onStop(); }
       if (B) B.release();
@@ -393,7 +400,9 @@
       if (mode !== 'episode') highlight(-1);
       setProgress(0); barEl.style.width = '0%';
       statusEl.textContent = 'Stopped.';
-    });
+    }
+    stopBtn.addEventListener('click', stopPlayback);
+    stopWowPlayback = stopPlayback;  // so the Daily Wud can silence the session
 
     if (channelsEl) channelsEl.addEventListener('click', function (e) {
       var btn = e.target && e.target.closest ? e.target.closest('.chan') : null;

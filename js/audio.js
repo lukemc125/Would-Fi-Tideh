@@ -46,11 +46,14 @@
     var self = this;
     if (!this.synth) { cb(null); return; }
     var got = this.synth.getVoices();
-    if (got && got.length) { this.voices = chooseVoices(got); cb(self.voices); return; }
+    if (got && got.length) this.voices = chooseVoices(got);
+    // Don't block playback waiting for voices — the session plays clips, and
+    // voices are only for the TTS fallback. Keep updating them in the background
+    // so a later fallback still gets good voices, but start now.
     this.synth.onvoiceschanged = function () {
       self.voices = chooseVoices(self.synth.getVoices());
-      cb(self.voices);
     };
+    cb(this.voices || null);
   };
 
   RadioPlayer.prototype.play = function (script, callbacks) {
